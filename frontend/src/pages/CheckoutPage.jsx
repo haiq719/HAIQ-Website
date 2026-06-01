@@ -10,25 +10,24 @@ const DELIVERY_NOTICE = 'Delivery pricing varies by location and will be confirm
 
 // Payment methods configuration
 const PAYMENT_METHODS = {
-  // Disabled for now - will re-enable when provider integration is ready
-  // mtn_momo: {
-  //   label: 'MTN Mobile Money',
-  //   code: '165',
-  //   merchantCode: '170010',
-  //   ussd: '*165*3#',
-  //   logo: '/logos/mtn-logo.svg',
-  //   color: '#FFD700',
-  //   description: 'Dial *165*3# to complete payment',
-  // },
-  // airtel: {
-  //   label: 'Airtel Money',
-  //   code: '185',
-  //   merchantCode: '100010',
-  //   ussd: '*185*9#',
-  //   logo: '/logos/airtel-logo.svg',
-  //   color: '#DC143C',
-  //   description: 'Dial *185*9# to complete payment',
-  // },
+  mtn_momo: {
+    label: 'MTN Mobile Money',
+    code: '165',
+    merchantCode: '170010',
+    ussd: '*165*3#',
+    logo: '/logos/mtn-logo.svg',
+    color: '#FFD700',
+    description: 'Dial *165*3# to complete payment',
+  },
+  airtel: {
+    label: 'Airtel Money',
+    code: '185',
+    merchantCode: '100010',
+    ussd: '*185*9#',
+    logo: '/logos/airtel-logo.svg',
+    color: '#DC143C',
+    description: 'Dial *185*9# to complete payment',
+  },
   cash_on_delivery: {
     label: 'Cash on Delivery',
     logo: '/logos/cod-logo.svg',
@@ -144,6 +143,15 @@ function OrderSummary({ items, subtotal, deliveryFee, total }) {
 
 function PayBtn({ method, selected, onSelect }) {
   const config = PAYMENT_METHODS[method]
+
+  // DIAGNOSTIC: Check if payment method config exists
+  console.log(`[PayBtn] method=${method}, config exists=${!!config}, available=${Object.keys(PAYMENT_METHODS).join(', ')}`)
+
+  if (!config) {
+    console.error(`[PayBtn] ERROR: No payment method config for "${method}". This will cause rendering to fail.`)
+    return <div style={{ color: 'red', padding: '10px', border: '1px solid red' }}>Error: Payment method "{method}" not configured</div>
+  }
+
   const isLogoMethod = config.logo !== undefined
   const isMobileMoneyMethod = method === 'mtn_momo' || method === 'airtel'
   
@@ -222,6 +230,11 @@ export default function CheckoutPage() {
   const [zonesLoading, setZonesLoading] = useState(false)
 
   const upd = f => e => setDetails(d => ({ ...d, [f]: e.target.value }))
+
+  // DIAGNOSTIC: Log step changes
+  useEffect(() => {
+    console.log(`[CheckoutPage] Step changed to: ${step}, payMethod: "${payMethod}", paymentValid: ${payMethod !== ''}`)
+  }, [step, payMethod])
 
   // Fetch delivery zones on mount
   useEffect(() => {
@@ -617,10 +630,18 @@ export default function CheckoutPage() {
                 <p className="text-sm mb-6" style={{ color: '#8C7355' }}>
                   Select how you'd like to pay for your order.
                 </p>
+
+                {/* DIAGNOSTIC: Log step 3 rendering */}
+                {(() => {
+                  console.log('[checkout step 3] Rendering payment methods section')
+                  console.log('[checkout step 3] payMethod state:', payMethod)
+                  console.log('[checkout step 3] Available methods:', Object.keys(PAYMENT_METHODS))
+                  return null
+                })()}
+
                 <div className="space-y-4 mb-6">
-                  {/* Mobile money methods disabled pending provider integration */}
-                  {/* <PayBtn method="mtn_momo" selected={payMethod === 'mtn_momo'} onSelect={setPayMethod} />
-                  <PayBtn method="airtel" selected={payMethod === 'airtel'} onSelect={setPayMethod} /> */}
+                  <PayBtn method="mtn_momo" selected={payMethod === 'mtn_momo'} onSelect={setPayMethod} />
+                  <PayBtn method="airtel" selected={payMethod === 'airtel'} onSelect={setPayMethod} />
                   <PayBtn method="cash_on_delivery" selected={payMethod === 'cash_on_delivery'} onSelect={setPayMethod} />
                 </div>
 
