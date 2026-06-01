@@ -1,8 +1,15 @@
 // adminApi.js — Axios instance for admin dashboard
 import axios from 'axios'
 
+// Ensure the base URL always includes /v1 path prefix
+let baseURL = import.meta.env.VITE_API_BASE_URL || 'https://haiq-api-9im4.onrender.com/v1'
+// If base URL doesn't end with /v1, append it
+if (baseURL && !baseURL.endsWith('/v1')) {
+  baseURL = baseURL.replace(/\/$/, '') + '/v1'
+}
+
 const adminApi = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://haiq-api.onrender.com/v1',
+  baseURL,
   withCredentials: false,
 })
 
