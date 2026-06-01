@@ -43,7 +43,6 @@ router.get('/summary', requireStaff, async (req, res, next) => {
         SELECT COUNT(*) AS newsletter_count
         FROM   newsletter_subscribers
         WHERE  is_active = true
-           OR  subscribed = true
       `),
 
       // Last 7 days revenue — one row per day
