@@ -391,13 +391,27 @@ export default function AnalyticsPage() {
             {topProducts.map((p, i) => (
               <div key={p.id} className="p-4 rounded border" style={{ background: '#2A1200', border: '1px solid #3D2000' }}>
                 {/* Product image */}
-                <div className="mb-3 h-32 bg-black/30 rounded overflow-hidden flex items-center justify-center">
-                  <img
-                    src={p.image_url || '/default-product.png'}
-                    alt={p.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => e.target.src = '/default-product.png'}
-                  />
+                <div className="mb-3 h-32 rounded overflow-hidden flex items-center justify-center"
+                  style={{ background: 'rgba(61,32,0,0.5)', border: '1px dashed rgba(140,115,85,0.3)' }}>
+                  {p.image_url ? (
+                    <img
+                      src={p.image_url}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        e.target.nextSibling.style.display = 'flex'
+                      }}
+                    />
+                  ) : null}
+                  <div className="flex-col items-center justify-center gap-1"
+                    style={{ display: p.image_url ? 'none' : 'flex', color: '#8C7355' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span style={{ fontSize: '10px' }}>{p.name}</span>
+                  </div>
                 </div>
 
                 {/* Best Seller Badge */}
