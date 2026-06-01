@@ -13,11 +13,10 @@ router.get('/', requireStaff, async (req, res, next) => {
     const { rows } = await query(`
       SELECT
         id, email, name,
-        COALESCE(subscribed_at, created_at) AS subscribed_at,
-        created_at,
-        COALESCE(is_active, subscribed, true) AS is_active
+        subscribed_at,
+        is_active
       FROM   newsletter_subscribers
-      ORDER  BY COALESCE(subscribed_at, created_at) DESC
+      ORDER  BY subscribed_at DESC NULLS LAST
     `);
     res.json({ success: true, subscribers: rows });
   } catch (err) { next(err); }
@@ -35,7 +34,7 @@ router.post('/campaign', requireSuperAdmin, async (req, res, next) => {
     const { rows: subs } = await query(`
       SELECT email, name
       FROM   newsletter_subscribers
-      WHERE  COALESCE(is_active, subscribed, true) = true
+      WHERE  is_active = true
     `);
 
     if (subs.length === 0) {
