@@ -1,8 +1,8 @@
 -- 004_reviews.sql
 
 CREATE TABLE IF NOT EXISTS product_reviews (
-  id               SERIAL PRIMARY KEY,
-  product_id       INT         NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id       UUID        NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   name             VARCHAR(100) NOT NULL,
   rating           SMALLINT    NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment          TEXT        NOT NULL,
