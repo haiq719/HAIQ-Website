@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
         <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>📊 Product vs Delivery revenue</p>
         <ResponsiveContainer width="100%" height={isMobile ? 200 : 240}>
           <LineChart data={revenue} margin={{ left: 0, right: 8 }}>
-            <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
+            <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false}
               tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={36} />
             <Tooltip content={customTooltip} />

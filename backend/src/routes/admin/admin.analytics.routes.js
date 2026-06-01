@@ -116,6 +116,8 @@ router.get('/revenue', requireStaff, async (req, res, next) => {
     const { rows } = await query(`
       SELECT
         DATE(created_at AT TIME ZONE 'Africa/Kampala') AS date,
+        COALESCE(SUM(subtotal), 0)                     AS product_revenue,
+        COALESCE(SUM(delivery_fee), 0)                 AS delivery_revenue,
         COALESCE(SUM(total), 0)                        AS revenue,
         COUNT(*)                                       AS order_count
       FROM   orders
