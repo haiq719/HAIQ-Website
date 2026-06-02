@@ -148,7 +148,10 @@ export default function AnalyticsPage() {
       summ, rev, stat, cust, prod, zo, tiers, heat, special, growth
     ]) => {
       setSummary(summ.data.summary || null)
-      setRevenue(rev.data.data || [])
+      setRevenue((rev.data.data || []).map(r => ({
+        ...r,
+        aov: r.order_count > 0 ? Math.round(r.revenue / r.order_count) : 0,
+      })))
       setStatusBreak(stat.data.data || [])
       setTopCustomers(cust.data.customers || [])
       setTopProducts(prod.data.products || [])
@@ -163,6 +166,12 @@ export default function AnalyticsPage() {
 
   const revenueTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null
+    const getName = key => ({
+      product_revenue: 'Product Revenue',
+      delivery_revenue: 'Delivery Revenue',
+      aov: 'Avg Order Value',
+    })[key] || key
+    const isRevenue = key => ['product_revenue', 'delivery_revenue'].includes(key)
     return (
       <div style={{
         background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
@@ -173,9 +182,11 @@ export default function AnalyticsPage() {
         </p>
         {payload.map((p, i) => (
           <p key={i} style={{ color: p.color, marginBottom: i < payload.length - 1 ? 3 : 0 }}>
-            {p.name === 'product_revenue' ? 'Product Revenue' : 'Delivery Revenue'}
+            {getName(p.dataKey)}
             {': '}
-            <span style={{ fontWeight: 700 }}>UGX {fmt(p.value)}</span>
+            <span style={{ fontWeight: 700 }}>
+              {isRevenue(p.dataKey) ? `UGX ${fmt(p.value)}` : p.value}
+            </span>
           </p>
         ))}
       </div>
@@ -445,15 +456,26 @@ export default function AnalyticsPage() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={isMobile ? 200 : 240}>
-            <LineChart data={revenue} margin={{ left: 0, right: 8 }}>
-              <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false}
+            <LineChart data={revenue} margin={{ left: 0, right: 36 }}>
+              <XAxis dataKey="date" tickFormatter={fmtDay}
+                tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="left" tick={{ fill: '#8C7355', fontSize: 10 }}
+                tickLine={false} axisLine={false}
+                tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={36} />
+              <YAxis yAxisId="right" orientation="right"
+                tick={{ fill: '#5A4A3A', fontSize: 10 }}
+                tickLine={false} axisLine={false}
                 tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={36} />
               <Tooltip content={revenueTooltip} />
-              <Line type="monotone" dataKey="product_revenue" stroke="#B8752A" strokeWidth={2.5}
+              <Line yAxisId="left" type="monotone" dataKey="product_revenue"
+                stroke="#B8752A" strokeWidth={2.5}
                 dot={false} activeDot={{ r: 5, fill: '#B8752A' }} name="product_revenue" />
-              <Line type="monotone" dataKey="delivery_revenue" stroke="#8C7355" strokeWidth={2}
-                strokeDasharray="5 5" dot={false} activeDot={{ r: 5, fill: '#8C7355' }} name="delivery_revenue" />
+              <Line yAxisId="left" type="monotone" dataKey="delivery_revenue"
+                stroke="#8C7355" strokeWidth={2} strokeDasharray="5 5"
+                dot={false} activeDot={{ r: 5, fill: '#8C7355' }} name="delivery_revenue" />
+              <Line yAxisId="right" type="monotone" dataKey="aov"
+                stroke="#E8C88A" strokeWidth={1.5} strokeDasharray="3 3"
+                dot={false} activeDot={{ r: 4, fill: '#E8C88A' }} name="aov" />
               <Legend />
             </LineChart>
           </ResponsiveContainer>
