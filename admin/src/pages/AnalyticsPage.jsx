@@ -11,7 +11,22 @@ import {
 
 const TIER_COLOR = { Crown: '#E8C88A', Reserve: '#B8752A', Classic: '#8C7355' }
 const PIE_COLORS = ['#B8752A', '#D4A574', '#8C7355', '#7A3B1E']
-const HEATMAP_COLORS = ['#F2EAD8', '#E8C88A', '#D4A574', '#B8752A', '#8C7355', '#5A4A3A', '#3D2000']
+// Heatmap — 5-stop scale from void-dark → bright gold
+const HEAT_STOPS = [
+  { threshold: 0,  bg: 'rgba(255,255,255,0.03)', text: 'transparent' },
+  { threshold: 1,  bg: '#3D2000',                text: '#8C7355'     },
+  { threshold: 2,  bg: '#7A3B1E',                text: '#D4A574'     },
+  { threshold: 3,  bg: '#B8752A',                text: '#1A0A00'     },
+  { threshold: 5,  bg: '#D4A574',                text: '#1A0A00'     },
+  { threshold: 8,  bg: '#E8C88A',                text: '#1A0A00'     },
+]
+const getHeatStop = (count) => {
+  let stop = HEAT_STOPS[0]
+  for (const s of HEAT_STOPS) {
+    if (count >= s.threshold) stop = s
+  }
+  return stop
+}
 
 const fmt    = n => Number(n || 0).toLocaleString()
 const fmtDay = s => {
@@ -74,6 +89,7 @@ export default function AnalyticsPage() {
   const [loading,              setLoading]              = useState(true)
   const [expandedAccordion,    setExpandedAccordion]    = useState(false)
   const [isMobile,             setIsMobile]             = useState(window.innerWidth < 768)
+  const [heatmapHover,         setHeatmapHover]         = useState(null)
 
   // Handle product image loading with retry limit (max 3 attempts)
   const handleProductImageError = (e, productName) => {
@@ -224,11 +240,6 @@ export default function AnalyticsPage() {
     )
   }
 
-  const getHeatmapColor = (orderCount) => {
-    const maxOrders = heatmapData.reduce((max, d) => Math.max(max, d.order_count), 1)
-    const ratio = orderCount / maxOrders
-    return HEATMAP_COLORS[Math.floor(ratio * (HEATMAP_COLORS.length - 1))]
-  }
 
   const heatmapGrid = (() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -413,47 +424,92 @@ export default function AnalyticsPage() {
       {/* Order Activity Heatmap */}
       <div className="admin-card">
         <SectionHeader label="Time Patterns" title="Order Activity Heatmap" />
+        <IconLabel icon={<CalendarDays size={13} strokeWidth={1.5}/>} text="Order density by day and hour — last 90 days" />
         {heatmapData.length === 0 ? (
           <p className="text-light/30 text-sm py-4">No heatmap data yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th className="p-1 text-light/30 font-semibold uppercase text-[8px]">Time</th>
-                  {heatmapGrid.days.map(day => (
-                    <th key={day} className="p-1 text-light/30 font-semibold uppercase text-[8px]">{day}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {heatmapGrid.hours.map(hour => (
-                  <tr key={hour}>
-                    <td className="p-1 text-light/30 font-semibold text-[8px]">{hour}</td>
-                    {heatmapGrid.days.map((day, dayIdx) => {
-                      const hourBucket = heatmapGrid.hours.indexOf(hour)
-                      const key = `${dayIdx}-${hourBucket}`
-                      const count = heatmapGrid.grid[key] || 0
-                      return (
-                        <td
-                          key={`${day}-${hour}`}
-                          className="p-1 text-center rounded"
-                          style={{
-                            backgroundColor: getHeatmapColor(count),
-                            color: count > 0 ? '#1A0A00' : '#F2EAD8',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                          }}
-                          title={`${day} ${hour}: ${count} orders`}
-                        >
-                          {count > 0 ? count : '—'}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Day headers */}
+            <div style={{ display: 'grid', gridTemplateColumns: '52px repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+              <div />
+              {heatmapGrid.days.map(day => (
+                <div key={day} style={{ textAlign: 'center', color: '#8C7355', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Grid rows */}
+            {heatmapGrid.hours.map((hour, hourIdx) => (
+              <div key={hour} style={{ display: 'grid', gridTemplateColumns: '52px repeat(7, 1fr)', gap: 4, marginBottom: 4 }}>
+                {/* Time label */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 8, color: '#8C7355', fontSize: 9, fontWeight: 600, letterSpacing: '0.05em' }}>
+                  {hour}
+                </div>
+                {/* Cells */}
+                {heatmapGrid.days.map((day, dayIdx) => {
+                  const key   = `${dayIdx}-${hourIdx}`
+                  const count = heatmapGrid.grid[key] || 0
+                  const stop  = getHeatStop(count)
+                  const isHovered = heatmapHover?.key === key
+                  return (
+                    <div
+                      key={key}
+                      onMouseEnter={() => setHeatmapHover({ key, day, hour, count })}
+                      onMouseLeave={() => setHeatmapHover(null)}
+                      style={{
+                        height: 34,
+                        borderRadius: 4,
+                        backgroundColor: stop.bg,
+                        border: isHovered
+                          ? '1px solid rgba(184,117,42,0.7)'
+                          : '1px solid rgba(255,255,255,0.04)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: count > 0 ? 'default' : 'default',
+                        transition: 'border-color 150ms, transform 100ms',
+                        transform: isHovered && count > 0 ? 'scale(1.08)' : 'scale(1)',
+                        position: 'relative',
+                      }}
+                    >
+                      {count > 0 && (
+                        <span style={{ color: stop.text, fontSize: 11, fontWeight: 700 }}>{count}</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+
+            {/* Hover tooltip */}
+            {heatmapHover && heatmapHover.count > 0 && (
+              <div style={{
+                marginTop: 12, padding: '8px 14px',
+                background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+                borderRadius: 6, display: 'inline-block',
+              }}>
+                <span style={{ color: '#8C7355', fontSize: 10 }}>
+                  {heatmapHover.day} · {heatmapHover.hour}
+                </span>
+                <span style={{ color: '#F2EAD8', fontSize: 12, marginLeft: 10, fontWeight: 700 }}>
+                  {heatmapHover.count} order{heatmapHover.count !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+
+            {/* Color scale legend */}
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ color: '#8C7355', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Low</span>
+              {HEAT_STOPS.map((s, i) => (
+                <div key={i} style={{
+                  width: 20, height: 10, borderRadius: 2,
+                  backgroundColor: s.bg === 'rgba(255,255,255,0.03)' ? '#2A1200' : s.bg,
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }} />
+              ))}
+              <span style={{ color: '#8C7355', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>High</span>
+            </div>
           </div>
         )}
       </div>
