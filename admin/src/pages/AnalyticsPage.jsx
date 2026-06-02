@@ -310,6 +310,29 @@ export default function AnalyticsPage() {
     )
   }
 
+  const zoneTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null
+    const data = payload[0]
+    const zoneName = data.name || data.payload?.zone_name || 'Zone'
+    const orderCount = data.value ?? 0
+    const deliveryRev = data.payload?.delivery_revenue ?? 0
+    return (
+      <div style={{
+        background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+        borderRadius: 6, padding: '10px 14px', fontSize: 12,
+      }}>
+        <p style={{ color: '#B8752A', marginBottom: 6, fontSize: 11, fontWeight: 700 }}>
+          {zoneName}
+        </p>
+        <p style={{ color: '#F2EAD8', marginBottom: 3 }}>
+          Orders: <span style={{ color: '#D4A574', fontWeight: 700 }}>{orderCount}</span>
+        </p>
+        <p style={{ color: '#F2EAD8' }}>
+          Delivery Revenue: <span style={{ color: '#B8752A', fontWeight: 700 }}>UGX {fmt(deliveryRev)}</span>
+        </p>
+      </div>
+    )
+  }
 
   const heatmapGrid = (() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -501,7 +524,7 @@ export default function AnalyticsPage() {
                 <Legend
                   formatter={(v) => <span style={{ color: '#F2EAD8', fontSize: 10 }}>{v}</span>}
                 />
-                <Tooltip content={customTooltip} />
+                <Tooltip content={zoneTooltip} />
               </PieChart>
             </ResponsiveContainer>
           )}
