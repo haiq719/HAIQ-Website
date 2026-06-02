@@ -5,6 +5,7 @@ const { query } = require('../config/db');
 const { logger } = require('../config/logger');
 const { generateGuestToken, generateResetToken } = require('../utils/tokenGenerator');
 const emailService = require('../services/email.service');
+const { validateEmailDeliverability } = require('../utils/emailValidator');
 
 function signAccessToken(userId, email) {
   const jti = require('crypto').randomUUID();
@@ -54,6 +55,12 @@ async function register(req, res, next) {
     }
     if (!/[!@#$%^&*()\-_=+\[\]{}|;:'",.<>?\/\\`~]/.test(password)) {
       return res.status(400).json({ success: false, error: 'Password must include at least one special character.' });
+    }
+
+    // Email deliverability check
+    const emailCheck = await validateEmailDeliverability(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ success: false, error: emailCheck.reason });
     }
 
     const existing = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);

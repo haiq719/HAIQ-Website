@@ -7,12 +7,19 @@ const { optionalAuth } = require('../middleware/auth');
 const { newsletterLimiter } = require('../middleware/rateLimiter');
 const { validate } = require('../middleware/validate');
 const { newsletterSubscribeSchema } = require('../middleware/schemas');
+const { validateEmailDeliverability } = require('../utils/emailValidator');
 
 router.post('/subscribe', newsletterLimiter, optionalAuth, validate(newsletterSubscribeSchema), async (req, res, next) => {
   try {
     const { email, name } = req.body;
 
     const normalised = email.trim().toLowerCase();
+
+    // Email deliverability check
+    const emailCheck = await validateEmailDeliverability(normalised);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ success: false, error: emailCheck.reason });
+    }
 
     // Check for existing subscription
     const { rows: [existing] } = await query(
