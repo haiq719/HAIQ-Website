@@ -12,7 +12,11 @@ try {
 } catch (e) {
   logger.warn('Failed to initialize Resend email client', { error: e.message });
 }
-const FROM   = `${process.env.EMAIL_FROM_NAME || 'HAIQ Bakery'} <${process.env.EMAIL_FROM || 'orders@haiq.ug'}>`;
+// FROM address resolution: uses verified domain in production, sandbox in dev/when domain not set
+const EMAIL_DOMAIN_VERIFIED = process.env.EMAIL_FROM && !process.env.EMAIL_FROM.includes('gmail');
+const FROM = EMAIL_DOMAIN_VERIFIED
+  ? `${process.env.EMAIL_FROM_NAME || 'HAIQ Bakery'} <${process.env.EMAIL_FROM}>`
+  : `${process.env.EMAIL_FROM_NAME || 'HAIQ Bakery'} <${process.env.EMAIL_FROM_DEV || 'onboarding@resend.dev'}>`;
 
 async function send({ to, subject, html }) {
   if (!process.env.RESEND_API_KEY || !resend) {
