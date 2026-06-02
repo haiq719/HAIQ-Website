@@ -57,7 +57,7 @@ export default function NewsletterPage() {
     setSending(true); setCampErr(null)
     try {
       const r = await adminApi.post('/admin/newsletter/campaign', { subject, body_html: bodyHtml })
-      setSent(r.data.sent)
+      setSent({ count: r.data.sent, failed: r.data.failed, total: r.data.total, message: r.data.message })
     } catch (err) { setCampErr(err.response?.data?.error || 'Send failed.') }
     finally { setSending(false) }
   }
@@ -153,17 +153,22 @@ export default function NewsletterPage() {
       {/* ── Campaign tab ── */}
       {tab === 'campaign' && (
         <div className="space-y-5 max-w-2xl">
-          {sent !== null ? (
-            <div className="p-6 text-center" style={{ background: '#2A1200', border: '1px solid rgba(74,222,128,0.3)' }}>
-              <p className="font-serif font-bold text-2xl mb-2" style={{ color: '#4ade80' }}>✓ Campaign Sent</p>
-              <p className="text-sm" style={{ color: '#8C7355' }}>
-                {sent} of {subs.filter(s=>s.is_active!==false).length} subscribers received your email.
+          {sent !== null && (
+            <div className="mt-3 p-3 rounded" style={{ background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)' }}>
+              <p className="text-sm font-semibold" style={{ color: sent.failed > 0 ? '#E8C88A' : '#6ECA8F' }}>
+                {sent.failed > 0 ? '⚠' : '✓'} {sent.message}
               </p>
-              <Button onClick={() => { setSent(null); setSubject(''); setBodyHtml('') }} variant="primary" size="sm" className="mt-4">
+              {sent.failed > 0 && (
+                <p className="text-xs mt-1" style={{ color: '#8C7355' }}>
+                  {sent.failed} email{sent.failed !== 1 ? 's' : ''} could not be delivered (test addresses or invalid domains).
+                </p>
+              )}
+              <Button onClick={() => { setSent(null); setSubject(''); setBodyHtml('') }} variant="primary" size="sm" className="mt-3">
                 Send Another
               </Button>
             </div>
-          ) : (
+          )}
+          {sent === null && (
             <>
               <div className="p-5" style={{ background: '#2A1200', border: '1px solid rgba(184,117,42,0.2)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.25em] mb-4" style={{ color: '#8C7355' }}>

@@ -51,6 +51,9 @@ router.post('/campaign', requireSuperAdmin, async (req, res, next) => {
 
     // Send emails with unsubscribe footer
     let sent = 0;
+    let failed = 0;
+    const failedEmails = [];
+
     for (const sub of subs) {
       try {
         await emailService.sendCampaign({
@@ -58,13 +61,32 @@ router.post('/campaign', requireSuperAdmin, async (req, res, next) => {
           subject,
           html:    body_html,
         });
-        sent++
+        sent++;
       } catch (e) {
+        failed++;
+        failedEmails.push({ email: sub.email, error: e.message });
         logger.warn('Campaign email failed', { email: sub.email, error: e.message });
       }
     }
 
-    res.json({ success: true, sent, total: subs.length, campaign_id: campaign.id });
+    // Update campaign record with final counts
+    await query(
+      `UPDATE newsletter_campaigns
+       SET sent_count = $1, failed_count = $2, failed_emails = $3
+       WHERE id = $4`,
+      [sent, failed, JSON.stringify(failedEmails), campaign.id]
+    );
+
+    res.json({
+      success:     true,
+      sent,
+      failed,
+      total:       subs.length,
+      campaign_id: campaign.id,
+      message:     failed > 0
+        ? `${sent} delivered, ${failed} failed. Check logs for details.`
+        : `All ${sent} emails delivered successfully.`,
+    });
   } catch (err) { next(err); }
 });
 
