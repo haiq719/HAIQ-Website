@@ -6,7 +6,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from 'recharts'
 import {
-  BarChart3, MapPin, Gift, Users, Trophy, Package, TrendingUp, AlertCircle,
+  BarChart3, MapPin, Gift, Users, Trophy, Package, TrendingUp, AlertCircle, CalendarDays,
 } from 'lucide-react'
 
 const TIER_COLOR = { Crown: '#E8C88A', Reserve: '#B8752A', Classic: '#8C7355' }
@@ -24,6 +24,15 @@ function SectionHeader({ label, title }) {
     <div className="mb-4">
       <p className="text-primary text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">{label}</p>
       <h2 className="font-serif font-bold text-light text-xl">{title}</h2>
+    </div>
+  )
+}
+
+function IconLabel({ icon, text }) {
+  return (
+    <div className="flex items-center gap-1.5 mb-3" style={{ color: '#8C7355' }}>
+      <span style={{ flexShrink: 0 }}>{icon}</span>
+      <p className="text-[10px]">{text}</p>
     </div>
   )
 }
@@ -188,25 +197,25 @@ export default function AnalyticsPage() {
             label="Total Orders"
             value={summary.total_orders}
             change={null}
-            icon={<Package size={20} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
+            icon={<Package size={18} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
           />
           <KPICard
             label="Product Revenue"
             value={summary.product_revenue}
             change={null}
-            icon={<BarChart3 size={20} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
+            icon={<BarChart3 size={18} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
           />
           <KPICard
             label="Active Orders"
             value={summary.active_orders}
             change={null}
-            icon={<TrendingUp size={20} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
+            icon={<TrendingUp size={18} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
           />
           <KPICard
             label="Total Customers"
             value={summary.total_customers}
             change={summary.weekly_change_pct}
-            icon={<Users size={20} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
+            icon={<Users size={18} strokeWidth={1.5} style={{ color: '#B8752A' }} />}
           />
         </div>
       )}
@@ -257,10 +266,7 @@ export default function AnalyticsPage() {
       {/* Revenue chart — dual lines */}
       <div className="admin-card">
         <SectionHeader label="Last 30 Days" title="Revenue Breakdown" />
-        <div className="flex items-center gap-2 text-[10px] mb-3" style={{ color: '#8C7355' }}>
-          <BarChart3 size={16} strokeWidth={1.5} />
-          <span>Product vs Delivery revenue</span>
-        </div>
+        <IconLabel icon={<BarChart3 size={13} strokeWidth={1.5}/>} text="Product vs Delivery revenue" />
         {revenue.length === 0 ? (
           <div className="flex items-center justify-center h-64 rounded"
             style={{ background: '#2A1200', border: '1px solid #3D2000' }}>
@@ -292,10 +298,7 @@ export default function AnalyticsPage() {
         {/* Zone Distribution */}
         <div className="admin-card">
           <SectionHeader label="By Location" title="Zone Distribution" />
-          <div className="flex items-center gap-2 text-[10px] mb-3" style={{ color: '#8C7355' }}>
-            <MapPin size={16} strokeWidth={1.5} />
-            <span>Zones with active orders</span>
-          </div>
+          <IconLabel icon={<MapPin size={13} strokeWidth={1.5}/>} text="Zones with active orders" />
           {zones.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No zone data yet.</p>
           ) : (
@@ -319,10 +322,7 @@ export default function AnalyticsPage() {
         {/* Orders by status */}
         <div className="admin-card">
           <SectionHeader label="Breakdown" title="Orders by Status" />
-          <div className="flex items-center gap-2 text-[10px] mb-3" style={{ color: '#8C7355' }}>
-            <TrendingUp size={16} strokeWidth={1.5} />
-            <span>Current order distribution</span>
-          </div>
+          <IconLabel icon={<TrendingUp size={13} strokeWidth={1.5}/>} text="Current order distribution" />
           {statusBreak.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No order data yet.</p>
           ) : (
@@ -394,10 +394,7 @@ export default function AnalyticsPage() {
         {/* Special Days Impact */}
         <div className="admin-card">
           <SectionHeader label="Comparison" title="Special Days Impact" />
-          <div className="flex items-center gap-2 text-[10px] mb-3" style={{ color: '#8C7355' }}>
-            <Gift size={16} strokeWidth={1.5} />
-            <span>vs Normal days performance</span>
-          </div>
+          <IconLabel icon={<CalendarDays size={13} strokeWidth={1.5}/>} text="vs Normal days performance" />
           {specialDaysData ? (
             <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
               <BarChart data={[
@@ -421,10 +418,7 @@ export default function AnalyticsPage() {
         {/* Customer Growth */}
         <div className="admin-card">
           <SectionHeader label="90 Days" title="Customer Growth" />
-          <div className="flex items-center gap-2 text-[10px] mb-3" style={{ color: '#8C7355' }}>
-            <Users size={16} strokeWidth={1.5} />
-            <span>Cumulative new signups</span>
-          </div>
+          <IconLabel icon={<Users size={13} strokeWidth={1.5}/>} text="Cumulative new signups" />
           {customerGrowthData.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No customer data yet.</p>
           ) : (
@@ -473,7 +467,7 @@ export default function AnalyticsPage() {
                 {/* Best Seller Badge */}
                 {i === 0 && (
                   <div className="inline-block px-2 py-1 text-xs rounded mb-2 font-bold flex items-center gap-1.5" style={{ background: '#B8752A', color: '#1A0A00' }}>
-                    <Trophy size={14} strokeWidth={1.5} />
+                    <Trophy size={12} strokeWidth={1.5} />
                     Best Seller
                   </div>
                 )}
@@ -484,7 +478,7 @@ export default function AnalyticsPage() {
                 {/* Stats */}
                 <div className="space-y-1">
                   <p className="text-xs flex items-center gap-1.5" style={{ color: '#8C7355' }}>
-                    <Package size={14} strokeWidth={1.5} />
+                    <Package size={11} strokeWidth={1.5} />
                     {fmt(p.units_sold)} units
                   </p>
                   <p className="text-xs font-semibold" style={{ color: '#B8752A' }}>
