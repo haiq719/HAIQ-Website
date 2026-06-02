@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import adminApi from '../services/adminApi'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend, AreaChart, Area,
+  BarChart, Bar, PieChart, Pie, Cell, Legend, AreaChart, Area, Sector,
 } from 'recharts'
 import {
   BarChart3, MapPin, Gift, Users, Trophy, Package, TrendingUp, AlertCircle, CalendarDays,
@@ -27,6 +27,15 @@ const getHeatStop = (count) => {
   }
   return stop
 }
+
+// Shared tooltip wrapper style — used on ALL charts
+const TOOLTIP_STYLE = {
+  outline: 'none',
+  filter: 'none',
+}
+
+// Shared cursor for all BarCharts — subtle wash, no border
+const BAR_CURSOR = { fill: 'rgba(255,255,255,0.028)', strokeWidth: 0 }
 
 const fmt    = n => Number(n || 0).toLocaleString()
 const fmtDay = s => {
@@ -489,16 +498,21 @@ export default function AnalyticsPage() {
                 tick={{ fill: '#5A4A3A', fontSize: 10 }}
                 tickLine={false} axisLine={false}
                 tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={36} />
-              <Tooltip content={revenueTooltip} />
+              <Tooltip
+                content={revenueTooltip}
+                wrapperStyle={TOOLTIP_STYLE}
+                animationDuration={120}
+                animationEasing="ease-out"
+              />
               <Line yAxisId="left" type="monotone" dataKey="product_revenue"
                 stroke="#B8752A" strokeWidth={2.5}
-                dot={false} activeDot={{ r: 5, fill: '#B8752A' }} name="product_revenue" />
+                dot={false} activeDot={{ r: 4, fill: '#B8752A', strokeWidth: 0 }} name="product_revenue" />
               <Line yAxisId="left" type="monotone" dataKey="delivery_revenue"
                 stroke="#8C7355" strokeWidth={2} strokeDasharray="5 5"
-                dot={false} activeDot={{ r: 5, fill: '#8C7355' }} name="delivery_revenue" />
+                dot={false} activeDot={{ r: 4, fill: '#8C7355', strokeWidth: 0 }} name="delivery_revenue" />
               <Line yAxisId="right" type="monotone" dataKey="aov"
                 stroke="#E8C88A" strokeWidth={1.5} strokeDasharray="3 3"
-                dot={false} activeDot={{ r: 4, fill: '#E8C88A' }} name="aov" />
+                dot={false} activeDot={{ r: 3, fill: '#E8C88A', strokeWidth: 0 }} name="aov" />
               <Legend />
             </LineChart>
           </ResponsiveContainer>
@@ -516,7 +530,20 @@ export default function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={isMobile ? 200 : 220}>
               <PieChart>
                 <Pie data={zones} dataKey="order_count" nameKey="zone_name"
-                  cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={2}>
+                  cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={2}
+                  activeShape={(props) => {
+                    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props
+                    return (
+                      <Sector
+                        cx={cx} cy={cy}
+                        innerRadius={innerRadius} outerRadius={outerRadius + 3}
+                        startAngle={startAngle} endAngle={endAngle}
+                        fill={fill}
+                        stroke="rgba(255,255,255,0.15)"
+                        strokeWidth={1}
+                      />
+                    )
+                  }}>
                   {zones.map((_, i) => (
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
@@ -524,7 +551,7 @@ export default function AnalyticsPage() {
                 <Legend
                   formatter={(v) => <span style={{ color: '#F2EAD8', fontSize: 10 }}>{v}</span>}
                 />
-                <Tooltip content={zoneTooltip} />
+                <Tooltip content={zoneTooltip} wrapperStyle={TOOLTIP_STYLE} animationDuration={120} animationEasing="ease-out" />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -543,8 +570,8 @@ export default function AnalyticsPage() {
                   tickLine={false} axisLine={false}
                   tickFormatter={s => s?.replace('_', '\n')} />
                 <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={28} />
-                <Tooltip content={statusTooltip} />
-                <Bar dataKey="count" fill="#B8752A" radius={[3, 3, 0, 0]} name="orders" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
+                <Tooltip content={statusTooltip} cursor={BAR_CURSOR} wrapperStyle={TOOLTIP_STYLE} animationDuration={120} animationEasing="ease-out" />
+                <Bar dataKey="count" fill="#B8752A" radius={[3, 3, 0, 0]} name="orders" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -660,9 +687,9 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis yAxisId="left" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
-                <Tooltip content={specialDaysTooltip} cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
-                <Bar yAxisId="left" dataKey="revenue" fill="#B8752A" radius={[3, 3, 0, 0]} name="Avg Revenue (UGX)" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
-                <Bar yAxisId="right" dataKey="orders" fill="#D4A574" radius={[3, 3, 0, 0]} name="Avg Orders" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
+                <Tooltip content={specialDaysTooltip} cursor={BAR_CURSOR} wrapperStyle={TOOLTIP_STYLE} animationDuration={120} animationEasing="ease-out" />
+                <Bar yAxisId="left" dataKey="revenue" fill="#B8752A" radius={[3, 3, 0, 0]} name="Avg Revenue (UGX)" />
+                <Bar yAxisId="right" dataKey="orders" fill="#D4A574" radius={[3, 3, 0, 0]} name="Avg Orders" />
                 <Legend />
               </BarChart>
             </ResponsiveContainer>
@@ -688,7 +715,7 @@ export default function AnalyticsPage() {
                 </defs>
                 <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
-                <Tooltip content={growthTooltip} />
+                <Tooltip content={growthTooltip} wrapperStyle={TOOLTIP_STYLE} animationDuration={120} animationEasing="ease-out" />
                 <Area type="monotone" dataKey="cumulative" stroke="#B8752A" strokeWidth={2} fillOpacity={1} fill="url(#colorCumulative)" />
               </AreaChart>
             </ResponsiveContainer>
