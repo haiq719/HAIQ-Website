@@ -99,7 +99,7 @@ router.get('/top-customers', requireStaff, async (req, res, next) => {
       GROUP  BY u.id
       HAVING COUNT(o.id) > 0
       ORDER  BY total_spent DESC
-      LIMIT  10
+      LIMIT  3
     `);
 
     res.json({ success: true, customers: rows });

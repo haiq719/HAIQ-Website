@@ -792,11 +792,8 @@ export default function AnalyticsPage() {
 
       {/* ── TOP CUSTOMERS (admin-only — not visible on frontend) ──────────────── */}
       <div className="admin-card border-l-2 border-haiq-gold/40">
-        <div className="flex items-start justify-between mb-4">
+        <div className="mb-4">
           <SectionHeader label="Internal — Admin Only" title="Top Customers" />
-          <span className="text-[10px] bg-haiq-gold/10 text-haiq-gold border border-haiq-gold/30 px-2.5 py-1 rounded-full uppercase tracking-widest">
-            👑 Hidden from customers
-          </span>
         </div>
         <p className="text-light/30 text-xs mb-5 leading-relaxed">
           Use this list to identify loyal customers for gifting or personal outreach.
