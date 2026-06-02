@@ -5,6 +5,7 @@ const router    = require('express').Router();
 const { query } = require('../../config/db');
 const { requireStaff, requireSuperAdmin } = require('../../middleware/adminAuth');
 const emailService = require('../../services/email.service');
+const resendAudience = require('../../services/resend.audience.service');
 const { logger }   = require('../../config/logger');
 
 // ── GET /v1/admin/newsletter — list subscribers ──────────────────────────────
@@ -88,6 +89,16 @@ router.post('/campaign', requireSuperAdmin, async (req, res, next) => {
         : `All ${sent} emails delivered successfully.`,
     });
   } catch (err) { next(err); }
+});
+
+// ── POST /v1/admin/newsletter/sync-audience — sync all subscribers to Resend Audience
+router.post('/sync-audience', requireSuperAdmin, async (req, res, next) => {
+  try {
+    const result = await resendAudience.syncAllSubscribersToAudience();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ── POST /v1/admin/newsletter/whatsapp-invite — send WhatsApp group invite via email

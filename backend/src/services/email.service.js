@@ -198,6 +198,14 @@ async function sendCampaign({ email, subject, html }) {
   });
 }
 
+// ── Build campaign HTML for batch sending ──────────────────────────────────────
+function buildCampaignHtml(bodyHtml, recipientEmail) {
+  return baseLayout(`
+    ${bodyHtml}
+    ${unsubscribeFooter(recipientEmail)}
+  `);
+}
+
 // ── Loyalty card approved ──────────────────────────────────────────────────────
 async function sendLoyaltyApproved({ email, name, cardNumber }) {
   return send({
@@ -264,6 +272,7 @@ module.exports = {
   sendPasswordReset,
   sendNewsletterWelcome,
   sendCampaign,
+  buildCampaignHtml,
   sendLoyaltyApproved,
   sendLoyaltyRejected,
   sendLoyaltyDispatched,
