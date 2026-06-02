@@ -1,0 +1,35 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent Render free tier spin-down
+    - cron: '*/10 * * * *'
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    name: Ping health endpoint
+    steps:
+      - name: Ping HAIQ API health endpoint
+        run: |
+          RESPONSE=$(curl -w "\n%{http_code}" -s https://haiq-api.onrender.com/health)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "✅ Health check response:"
+          echo "$BODY" | jq . 2>/dev/null || echo "$BODY"
+          echo ""
+          echo "HTTP Status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Health check failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "✅ Backend is healthy and awake"
+
+      - name: Notify if failed
+        if: failure()
+        run: echo "⚠️  Backend health check failed - service may be down"

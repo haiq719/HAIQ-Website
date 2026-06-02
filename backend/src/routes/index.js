@@ -2,6 +2,17 @@
 'use strict';
 
 const router = require('express').Router();
+const { getServerTime, validateTimeSync, enforceTimeValidation } = require('../middleware/timeValidation');
+
+// ── Time synchronization endpoint (no auth) ──────────────────────────────
+// HEAD/GET /api/server-time — Returns server's authoritative time for client validation
+// Used by frontend to detect incorrect system clock
+router.head('/server-time', getServerTime);
+router.get('/server-time', getServerTime);
+
+// ── Time validation middleware (applies to all routes) ──────────────────────
+// Extracts X-Client-Time header and validates clock skew
+router.use(validateTimeSync);
 
 // ── Existing routes ────────────────────────────────────────────────────────
 router.use('/auth',       require('./auth.routes'));

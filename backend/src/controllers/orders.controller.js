@@ -8,10 +8,17 @@ const { logger } = require('../config/logger')
 const { generateOrderNumber, generateTrackingToken } = require('../utils/tokenGenerator')
 const emailService  = require('../services/email.service')
 const paymentsService = require('../services/payments.service')
+const { enforceTimeValidation } = require('../middleware/timeValidation')
 
 const DELIVERY_FEE = 0  // Default fallback - overridden by zone price
 
 async function create(req, res, next) {
+  // Security: Validate client-server time synchronization before processing order
+  // Prevents orders from users with incorrect system time
+  if (req.timeValidation && req.timeValidation.isCritical) {
+    return enforceTimeValidation(req, res, () => {})
+  }
+
   const client = await getClient()
   try {
     await client.query('BEGIN')

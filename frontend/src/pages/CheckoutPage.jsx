@@ -4,6 +4,15 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import Button from '../components/shared/Button'
+import TimeWarning from '../components/TimeWarning'
+import {
+  getServerTime,
+  getClientTime,
+  calculateClockSkew,
+  CLOCK_SKEW_TOLERANCE_SECONDS,
+  CRITICAL_SKEW_THRESHOLD,
+  addClientTimeHeader,
+} from '../utils/timeSync'
 
 // Delivery notice instead of a hardcoded fee
 const DELIVERY_NOTICE = 'Delivery pricing varies by location and will be confirmed by our team before dispatch. Estimated from UGX 5,000 within Kampala.'
@@ -224,6 +233,12 @@ export default function CheckoutPage() {
   const [submitting,  setSubmitting]  = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
+  // Time validation state
+  const [serverTime, setServerTime] = useState(null)
+  const [clientTime, setClientTime] = useState(new Date())
+  const [clockSkew, setClockSkew] = useState(0)
+  const [showTimeWarning, setShowTimeWarning] = useState(false)
+
   // Delivery zones state
   const [zones, setZones] = useState([])
   const [selectedZone, setSelectedZone] = useState(null)
@@ -252,6 +267,31 @@ export default function CheckoutPage() {
       }
     }
     fetchZones()
+  }, [])
+
+  // Initialize time synchronization on mount
+  useEffect(() => {
+    const initializeTimeSync = async () => {
+      try {
+        const server = await getServerTime()
+        const client = getClientTime()
+        const skew = calculateClockSkew(server, client)
+
+        setServerTime(server)
+        setClientTime(client)
+        setClockSkew(skew)
+
+        // Show warning if skew > 5 minutes
+        if (skew > CLOCK_SKEW_TOLERANCE_SECONDS) {
+          setShowTimeWarning(true)
+          console.warn('[Checkout] Clock skew detected:', { skewSeconds: skew })
+        }
+      } catch (error) {
+        console.error('[Checkout] Time sync initialization failed:', error)
+      }
+    }
+
+    initializeTimeSync()
   }, [])
 
   useEffect(() => {
@@ -322,6 +362,25 @@ export default function CheckoutPage() {
     if (!consent) { setSubmitError('Please confirm your agreement.'); return }
     if (detailsFields.some(containsHtml)) { setSubmitError('Please remove HTML or script content from the form.'); return }
 
+    // Security: Check time synchronization before submitting order
+    if (serverTime) {
+      const currentClient = getClientTime()
+      const newSkew = calculateClockSkew(serverTime, currentClient)
+      setClockSkew(newSkew)
+
+      // Block order if time is critically off (> 1 hour)
+      if (newSkew > CRITICAL_SKEW_THRESHOLD) {
+        setSubmitError('Your system time is incorrect. Please sync your device date and time and try again.')
+        setShowTimeWarning(true)
+        return
+      }
+
+      // Show warning if time is moderately off (5 minutes to 1 hour)
+      if (newSkew > CLOCK_SKEW_TOLERANCE_SECONDS) {
+        setShowTimeWarning(true)
+      }
+    }
+
     // DIAGNOSTIC — remove after fix confirmed
     const orderItems = toOrderItems();
     console.log('[checkout] items count:', orderItems.length);
@@ -348,8 +407,11 @@ export default function CheckoutPage() {
         payment_method:   payMethod,
         consent_given:    true,
       }
-      
-      const { data } = await api.post('/orders', body)
+
+      // Add client time header for server-side validation
+      const headers = addClientTimeHeader()
+
+      const { data } = await api.post('/orders', body, { headers })
 
       // For mobile money, redirect to payment verification page
       if (payMethod === 'mtn_momo' || payMethod === 'airtel') {
@@ -392,6 +454,32 @@ export default function CheckoutPage() {
 
       <div className="container mx-auto px-4 md:px-8 py-10 max-w-5xl">
         <StepBar step={step} />
+
+        {/* Time Validation Warning */}
+        <TimeWarning
+          skewSeconds={clockSkew}
+          isVisible={showTimeWarning}
+          onRefresh={() => {
+            // Refresh time check
+            const initializeTimeSync = async () => {
+              try {
+                const server = await getServerTime()
+                const client = getClientTime()
+                const skew = calculateClockSkew(server, client)
+                setServerTime(server)
+                setClientTime(client)
+                setClockSkew(skew)
+                if (skew <= CLOCK_SKEW_TOLERANCE_SECONDS) {
+                  setShowTimeWarning(false)
+                }
+              } catch (error) {
+                console.error('[Checkout] Time sync refresh failed:', error)
+              }
+            }
+            initializeTimeSync()
+          }}
+          variant="warning"
+        />
 
         <div className="grid md:grid-cols-5 gap-8">
           <div className="md:col-span-3 space-y-6">

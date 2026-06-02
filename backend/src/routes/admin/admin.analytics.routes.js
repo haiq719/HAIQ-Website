@@ -136,15 +136,19 @@ router.get('/top-products', requireStaff, async (req, res, next) => {
       SELECT
         p.id,
         p.name,
-        COALESCE(pi.url, '') AS image_url,
-        SUM(oi.quantity)   AS units_sold,
-        SUM(oi.line_total) AS revenue
+        COALESCE(first_img.url, '') AS image_url,
+        SUM(oi.quantity)::int        AS units_sold,
+        SUM(oi.line_total)           AS revenue
       FROM   order_items oi
       JOIN   products p ON p.id = oi.product_id
-      LEFT   JOIN product_images pi ON pi.product_id = p.id AND pi.sort_order = 0
-      JOIN   orders o ON o.id = oi.order_id
-      WHERE  o.payment_status = 'paid'
-      GROUP  BY p.id, p.name, pi.url
+      JOIN   orders o   ON o.id = oi.order_id AND o.payment_status = 'paid'
+      LEFT   JOIN LATERAL (
+        SELECT url FROM product_images
+        WHERE  product_id = p.id
+        ORDER  BY sort_order ASC
+        LIMIT  1
+      ) first_img ON true
+      GROUP  BY p.id, p.name, first_img.url
       ORDER  BY units_sold DESC
       LIMIT  6
     `);

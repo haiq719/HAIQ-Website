@@ -3,6 +3,14 @@ import api from '../services/api'
 import { useCart } from '../context/CartContext'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
+import TimeWarning from '../components/TimeWarning'
+import {
+  getServerTime,
+  getClientTime,
+  calculateClockSkew,
+  CLOCK_SKEW_TOLERANCE_SECONDS,
+  addClientTimeHeader,
+} from '../utils/timeSync'
 
 const BOX_SIZE     = 4
 const COOKIE_SLUGS = ['venom','coconut','crimson-sin','campfire-after-dark','blackout']
@@ -31,6 +39,12 @@ export default function BuildYourBoxPage() {
   const originalPrice = 80000
   const specialPrice  = 40000
 
+  // Time validation state
+  const [serverTime, setServerTime] = useState(null)
+  const [clientTime, setClientTime] = useState(new Date())
+  const [clockSkew, setClockSkew] = useState(0)
+  const [showTimeWarning, setShowTimeWarning] = useState(false)
+
   const total     = Object.values(selections).reduce((s,n) => s+n, 0)
   const isFull    = total === BOX_SIZE
   const pct       = Math.round((total / BOX_SIZE) * 100)
@@ -40,6 +54,31 @@ export default function BuildYourBoxPage() {
       .then(res => setIsSpecialDay(res.data.isSpecialDay === true || res.data.active === true))
       .catch(() => setIsSpecialDay(false))
       .finally(() => setCheckingDay(false))
+  }, [])
+
+  // Initialize time synchronization on mount
+  useEffect(() => {
+    const initializeTimeSync = async () => {
+      try {
+        const server = await getServerTime()
+        const client = getClientTime()
+        const skew = calculateClockSkew(server, client)
+
+        setServerTime(server)
+        setClientTime(client)
+        setClockSkew(skew)
+
+        // Show warning if skew > 5 minutes
+        if (skew > CLOCK_SKEW_TOLERANCE_SECONDS) {
+          setShowTimeWarning(true)
+          console.warn('[BuildYourBox] Clock skew detected:', { skewSeconds: skew })
+        }
+      } catch (error) {
+        console.error('[BuildYourBox] Time sync initialization failed:', error)
+      }
+    }
+
+    initializeTimeSync()
   }, [])
 
   useEffect(() => {
@@ -89,6 +128,20 @@ export default function BuildYourBoxPage() {
       return
     }
     setBoxError(null)
+
+    // Refresh time check before adding to cart
+    const currentClient = getClientTime()
+    if (serverTime) {
+      const newSkew = calculateClockSkew(serverTime, currentClient)
+      setClockSkew(newSkew)
+
+      // Show warning if time is off
+      if (newSkew > CLOCK_SKEW_TOLERANCE_SECONDS) {
+        setShowTimeWarning(true)
+        setBoxError('Your system time appears to be incorrect. Please correct it before proceeding to checkout.')
+        return
+      }
+    }
 
     const selectionsList = products
       .filter(p => (selections[p.id]||0) > 0)
@@ -187,6 +240,32 @@ export default function BuildYourBoxPage() {
       </div>
 
       <div className="container mx-auto px-6 md:px-16 py-12">
+        {/* Time Validation Warning */}
+        <TimeWarning
+          skewSeconds={clockSkew}
+          isVisible={showTimeWarning}
+          onRefresh={() => {
+            // Refresh time check
+            const initializeTimeSync = async () => {
+              try {
+                const server = await getServerTime()
+                const client = getClientTime()
+                const skew = calculateClockSkew(server, client)
+                setServerTime(server)
+                setClientTime(client)
+                setClockSkew(skew)
+                if (skew <= CLOCK_SKEW_TOLERANCE_SECONDS) {
+                  setShowTimeWarning(false)
+                }
+              } catch (error) {
+                console.error('[BuildYourBox] Time sync refresh failed:', error)
+              }
+            }
+            initializeTimeSync()
+          }}
+          variant="warning"
+        />
+
         {error && !loading ? (
           <div className="text-center py-16">
             <p className="font-serif font-bold text-xl mb-2" style={{ color: '#F2EAD8' }}>⚠️ Couldn't Load Options</p>
