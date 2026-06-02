@@ -5,6 +5,10 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from 'recharts'
+import {
+  Package, ShoppingBag, Truck, Users, BarChart2, MapPin,
+  TrendingUp, CalendarDays, Trophy,
+} from 'lucide-react'
 
 const TIER_COLOR = { Crown: '#E8C88A', Reserve: '#B8752A', Classic: '#8C7355' }
 const PIE_COLORS = ['#B8752A', '#D4A574', '#8C7355', '#7A3B1E']
@@ -25,13 +29,22 @@ function SectionHeader({ label, title }) {
   )
 }
 
+function IconLabel({ icon, text }) {
+  return (
+    <div className="flex items-center gap-1.5 mb-3" style={{ color: '#8C7355' }}>
+      <span style={{ flexShrink: 0 }}>{icon}</span>
+      <p className="text-[10px]">{text}</p>
+    </div>
+  )
+}
+
 function KPICard({ label, value, change, icon }) {
   const isPositive = change > 0
   return (
     <div className="admin-card p-4">
       <div className="flex items-start justify-between mb-3">
         <p className="text-light/50 text-[10px] font-semibold uppercase tracking-widest">{label}</p>
-        <p className="text-xl">{icon}</p>
+        <span style={{ color: '#B8752A', opacity: 0.7 }}>{icon}</span>
       </div>
       <p className="font-serif font-bold text-light text-2xl mb-2">{fmt(value)}</p>
       {change !== null && (
@@ -146,30 +159,10 @@ export default function AnalyticsPage() {
       {/* KPI Cards */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KPICard
-            label="Total Orders"
-            value={summary.total_orders}
-            change={null}
-            icon="📦"
-          />
-          <KPICard
-            label="Product Revenue"
-            value={summary.product_revenue}
-            change={null}
-            icon="🍪"
-          />
-          <KPICard
-            label="Active Orders"
-            value={summary.active_orders}
-            change={null}
-            icon="🚚"
-          />
-          <KPICard
-            label="Total Customers"
-            value={summary.total_customers}
-            change={summary.weekly_change_pct}
-            icon="👥"
-          />
+          <KPICard label="Total Orders"    value={summary.total_orders}    change={null}                    icon={<Package   size={18} strokeWidth={1.5} />} />
+          <KPICard label="Product Revenue" value={summary.product_revenue} change={null}                    icon={<ShoppingBag size={18} strokeWidth={1.5} />} />
+          <KPICard label="Active Orders"   value={summary.active_orders}   change={null}                    icon={<Truck     size={18} strokeWidth={1.5} />} />
+          <KPICard label="Total Customers" value={summary.total_customers} change={summary.weekly_change_pct} icon={<Users    size={18} strokeWidth={1.5} />} />
         </div>
       )}
 
@@ -219,7 +212,7 @@ export default function AnalyticsPage() {
       {/* Revenue chart — dual lines */}
       <div className="admin-card">
         <SectionHeader label="Last 30 Days" title="Revenue Breakdown" />
-        <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>📊 Product vs Delivery revenue</p>
+        <IconLabel icon={<BarChart2 size={13} strokeWidth={1.5}/>} text="Product vs Delivery revenue" />
         <ResponsiveContainer width="100%" height={isMobile ? 200 : 240}>
           <LineChart data={revenue} margin={{ left: 0, right: 8 }}>
             <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
@@ -239,7 +232,7 @@ export default function AnalyticsPage() {
         {/* Zone Distribution */}
         <div className="admin-card">
           <SectionHeader label="By Location" title="Zone Distribution" />
-          <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>📍 Zones with active orders</p>
+          <IconLabel icon={<MapPin size={13} strokeWidth={1.5}/>} text="Zones with active orders" />
           {zones.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No zone data yet.</p>
           ) : (
@@ -263,7 +256,7 @@ export default function AnalyticsPage() {
         {/* Orders by status */}
         <div className="admin-card">
           <SectionHeader label="Breakdown" title="Orders by Status" />
-          <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>📈 Current order distribution</p>
+          <IconLabel icon={<TrendingUp size={13} strokeWidth={1.5}/>} text="Current order distribution" />
           {statusBreak.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No order data yet.</p>
           ) : (
@@ -335,7 +328,7 @@ export default function AnalyticsPage() {
         {/* Special Days Impact */}
         <div className="admin-card">
           <SectionHeader label="Comparison" title="Special Days Impact" />
-          <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>🎉 vs Normal days performance</p>
+          <IconLabel icon={<CalendarDays size={13} strokeWidth={1.5}/>} text="vs Normal days performance" />
           {specialDaysData ? (
             <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
               <BarChart data={[
@@ -359,7 +352,7 @@ export default function AnalyticsPage() {
         {/* Customer Growth */}
         <div className="admin-card">
           <SectionHeader label="90 Days" title="Customer Growth" />
-          <p className="text-[10px] mb-3" style={{ color: '#8C7355' }}>👥 Cumulative new signups</p>
+          <IconLabel icon={<Users size={13} strokeWidth={1.5}/>} text="Cumulative new signups" />
           {customerGrowthData.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No customer data yet.</p>
           ) : (
@@ -416,8 +409,10 @@ export default function AnalyticsPage() {
 
                 {/* Best Seller Badge */}
                 {i === 0 && (
-                  <div className="inline-block px-2 py-1 text-xs rounded mb-2 font-bold" style={{ background: '#B8752A', color: '#1A0A00' }}>
-                    🏆 Best Seller
+                  <div className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded mb-2 font-bold"
+                    style={{ background: '#B8752A', color: '#1A0A00' }}>
+                    <Trophy size={12} strokeWidth={1.5} />
+                    Best Seller
                   </div>
                 )}
 
@@ -426,7 +421,10 @@ export default function AnalyticsPage() {
 
                 {/* Stats */}
                 <div className="space-y-1">
-                  <p className="text-xs" style={{ color: '#8C7355' }}>📦 {fmt(p.units_sold)} units</p>
+                  <p className="text-xs flex items-center gap-1" style={{ color: '#8C7355' }}>
+                    <Package size={11} strokeWidth={1.5} />
+                    {fmt(p.units_sold)} units
+                  </p>
                   <p className="text-xs font-semibold" style={{ color: '#B8752A' }}>
                     UGX {fmt(p.revenue)}
                   </p>
