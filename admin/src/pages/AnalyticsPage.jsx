@@ -202,6 +202,65 @@ export default function AnalyticsPage() {
 
   const fmtStatus = s => (s || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
+  // ── Insights — auto-surface from fetched data ─────────────────────────────
+  const insights = (() => {
+    const list = []
+
+    // Best-selling cookie
+    if (topProducts.length > 0) {
+      const p = topProducts[0]
+      list.push({
+        label: 'Best-Selling Cookie',
+        value: p.name,
+        sub:   `${fmt(p.units_sold)} units · UGX ${fmt(p.revenue)}`,
+        color: '#B8752A',
+      })
+    }
+
+    // Peak day + time from heatmap
+    if (heatmapData.length > 0) {
+      const peak = heatmapData.reduce((best, d) =>
+        d.order_count > best.order_count ? d : best, heatmapData[0])
+      const dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+      const hourStart = peak.hour_of_day
+      const hourLabel = `${String(hourStart).padStart(2,'0')}:00–${String(hourStart + 1).padStart(2,'0')}:00`
+      list.push({
+        label: 'Busiest Time',
+        value: `${dayNames[peak.day_of_week]}s at ${hourLabel}`,
+        sub:   `${peak.order_count} orders on average`,
+        color: '#E8C88A',
+      })
+    }
+
+    // Special days revenue boost
+    if (specialDaysData?.special_days?.avg_revenue && specialDaysData?.normal_days?.avg_revenue) {
+      const sp  = specialDaysData.special_days.avg_revenue
+      const nm  = specialDaysData.normal_days.avg_revenue
+      if (nm > 0) {
+        const pct = Math.round(((sp - nm) / nm) * 100)
+        list.push({
+          label: 'Special Days Boost',
+          value: `${pct > 0 ? '+' : ''}${pct}% revenue`,
+          sub:   `UGX ${fmt(Math.round(sp))} avg vs UGX ${fmt(Math.round(nm))} normal`,
+          color: pct >= 0 ? '#4ade80' : '#f87171',
+        })
+      }
+    }
+
+    // Dominant loyalty tier
+    if (customerTiers.length > 0) {
+      const top = customerTiers.reduce((a, b) => a.tier_count > b.tier_count ? a : b)
+      list.push({
+        label: 'Most Common Tier',
+        value: top.loyalty_tier,
+        sub:   `${top.tier_count} customers · Avg UGX ${fmt(top.avg_spent)}`,
+        color: TIER_COLOR[top.loyalty_tier] || '#8C7355',
+      })
+    }
+
+    return list
+  })()
+
   const statusTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null
     const count = payload[0]?.value ?? 0
@@ -270,6 +329,32 @@ export default function AnalyticsPage() {
         <p className="text-primary text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">Insights</p>
         <h1 className="font-serif font-bold text-light text-3xl">Analytics</h1>
       </div>
+
+      {/* ── Insights Panel ───────────────────────────────────────────────────── */}
+      {insights.length > 0 && (
+        <div className="admin-card">
+          <SectionHeader label="Auto-detected" title="Key Insights" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {insights.map((ins, i) => (
+              <div key={i} style={{
+                background: '#1A0A00',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderLeft: `3px solid ${ins.color}`,
+                borderRadius: 6,
+                padding: '12px 14px',
+              }}>
+                <p style={{ color: '#8C7355', fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 4 }}>
+                  {ins.label}
+                </p>
+                <p style={{ color: ins.color, fontFamily: 'serif', fontSize: 16, fontWeight: 700, marginBottom: 3 }}>
+                  {ins.value}
+                </p>
+                <p style={{ color: '#8C7355', fontSize: 10 }}>{ins.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       {summary && (
