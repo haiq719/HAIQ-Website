@@ -110,7 +110,6 @@ const topCustomers = async (req, res, next) => {
         u.email,
         u.phone,
         u.loyalty_tier,
-        u.loyalty_points,
         COUNT(o.id)        AS total_orders,
         SUM(o.total)       AS total_spent,
         MAX(o.created_at)  AS last_order_at
@@ -118,7 +117,7 @@ const topCustomers = async (req, res, next) => {
       JOIN orders o ON o.user_id = u.id
       WHERE o.payment_status = 'paid' AND u.is_guest = false
       GROUP BY u.id, u.full_name, u.first_name, u.last_name, u.email, u.phone,
-               u.loyalty_tier, u.loyalty_points
+               u.loyalty_tier
       ORDER BY total_spent DESC
       LIMIT 10
     `);

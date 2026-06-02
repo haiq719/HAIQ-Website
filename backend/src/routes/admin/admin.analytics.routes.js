@@ -90,7 +90,6 @@ router.get('/top-customers', requireStaff, async (req, res, next) => {
         COALESCE(u.full_name, u.first_name || ' ' || COALESCE(u.last_name, '')) AS full_name,
         u.email,
         u.phone,
-        u.loyalty_points,
         u.loyalty_tier,
         COUNT(o.id)::int               AS order_count,
         COALESCE(SUM(o.total), 0)      AS total_spent,

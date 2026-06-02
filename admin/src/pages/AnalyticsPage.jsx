@@ -814,7 +814,6 @@ export default function AnalyticsPage() {
                   <th className="text-left py-2 pr-4">Name</th>
                   <th className="text-left py-2 pr-4">Email</th>
                   <th className="text-left py-2 pr-4">Tier</th>
-                  <th className="text-left py-2 pr-4">Points</th>
                   <th className="text-left py-2 pr-4">Orders</th>
                   <th className="text-left py-2">Total Spent</th>
                 </tr>
@@ -837,9 +836,6 @@ export default function AnalyticsPage() {
                       >
                         {c.loyalty_tier || 'Classic'}
                       </span>
-                    </td>
-                    <td className="py-3 pr-4 text-haiq-gold font-semibold">
-                      {fmt(c.loyalty_points)} pts
                     </td>
                     <td className="py-3 pr-4 text-light/50">{c.total_orders}</td>
                     <td className="py-3 text-primary font-bold">UGX {fmt(c.total_spent)}</td>

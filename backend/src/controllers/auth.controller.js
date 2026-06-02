@@ -90,7 +90,7 @@ async function login(req, res, next) {
 
     const { rows: [user] } = await query(
       `SELECT id, email, first_name, last_name, full_name, password_hash,
-              is_guest, loyalty_points, loyalty_tier, loyalty_status
+              is_guest, loyalty_tier, loyalty_status
        FROM users WHERE email = $1`,
       [email.toLowerCase()]
     );
@@ -123,7 +123,6 @@ async function login(req, res, next) {
         full_name:      user.full_name || `${user.first_name} ${user.last_name}`.trim(),
         first_name:     user.first_name,
         last_name:      user.last_name,
-        loyalty_points: user.loyalty_points,
         loyalty_tier:   user.loyalty_tier,
         loyalty_status: user.loyalty_status,
       },
@@ -214,7 +213,7 @@ async function getMe(req, res, next) {
   try {
     const { rows: [user] } = await query(
       `SELECT id, email, first_name, last_name, full_name, phone,
-              email_verified, loyalty_points, loyalty_tier, loyalty_status, created_at
+              email_verified, loyalty_tier, loyalty_status, created_at
        FROM users WHERE id = $1`,
       [req.user.id]
     );
