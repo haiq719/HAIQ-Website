@@ -18,6 +18,11 @@ const fmtDay = s => {
   const d = new Date(s)
   return `${d.getDate()}/${d.getMonth() + 1}`
 }
+const fmtTooltipDate = (dateStr) => {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
 
 function SectionHeader({ label, title }) {
   return (
@@ -140,16 +145,81 @@ export default function AnalyticsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const customTooltip = ({ active, payload, label }) => {
+  const revenueTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null
     return (
-      <div className="bg-surface border border-border px-4 py-2.5 rounded text-xs">
-        <p className="text-light/50 mb-1">{label}</p>
+      <div style={{
+        background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+        borderRadius: 6, padding: '10px 14px', fontSize: 12,
+      }}>
+        <p style={{ color: '#8C7355', marginBottom: 6, fontSize: 10, letterSpacing: '0.08em' }}>
+          {fmtTooltipDate(label)}
+        </p>
         {payload.map((p, i) => (
-          <p key={i} style={{ color: p.color }}>
-            {p.name?.includes('revenue') ? `UGX ${fmt(p.value)}` : p.value}
+          <p key={i} style={{ color: p.color, marginBottom: i < payload.length - 1 ? 3 : 0 }}>
+            {p.name === 'product_revenue' ? 'Product Revenue' : 'Delivery Revenue'}
+            {': '}
+            <span style={{ fontWeight: 700 }}>UGX {fmt(p.value)}</span>
           </p>
         ))}
+      </div>
+    )
+  }
+
+  const growthTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null
+    const value = payload.find(p => p.dataKey === 'cumulative')?.value ?? 0
+    return (
+      <div style={{
+        background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+        borderRadius: 6, padding: '10px 14px', fontSize: 12,
+      }}>
+        <p style={{ color: '#8C7355', marginBottom: 6, fontSize: 10 }}>
+          {fmtTooltipDate(label)}
+        </p>
+        <p style={{ color: '#F2EAD8' }}>
+          Total customers: <span style={{ color: '#B8752A', fontWeight: 700 }}>{value}</span>
+        </p>
+      </div>
+    )
+  }
+
+  const fmtStatus = s => (s || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+  const statusTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null
+    const count = payload[0]?.value ?? 0
+    return (
+      <div style={{
+        background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+        borderRadius: 6, padding: '10px 14px', fontSize: 12,
+      }}>
+        <p style={{ color: '#8C7355', marginBottom: 4, fontSize: 10 }}>{fmtStatus(label)}</p>
+        <p style={{ color: '#F2EAD8' }}>
+          Orders: <span style={{ color: '#B8752A', fontWeight: 700 }}>{count}</span>
+        </p>
+      </div>
+    )
+  }
+
+  const specialDaysTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null
+    const rev    = payload.find(p => p.dataKey === 'revenue')?.value ?? 0
+    const orders = payload.find(p => p.dataKey === 'orders')?.value ?? 0
+    return (
+      <div style={{
+        background: '#1A0A00', border: '1px solid rgba(184,117,42,0.3)',
+        borderRadius: 6, padding: '10px 14px', fontSize: 12,
+      }}>
+        <p style={{ color: '#8C7355', marginBottom: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em' }}>
+          {label?.toUpperCase()}
+        </p>
+        <p style={{ color: '#F2EAD8', marginBottom: 3 }}>
+          Avg Revenue: <span style={{ color: '#B8752A', fontWeight: 700 }}>UGX {fmt(Math.round(rev))}</span>
+        </p>
+        <p style={{ color: '#F2EAD8' }}>
+          Avg Orders: <span style={{ color: '#D4A574', fontWeight: 700 }}>{Number(orders).toFixed(1)}</span>
+        </p>
       </div>
     )
   }
@@ -283,7 +353,7 @@ export default function AnalyticsPage() {
               <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false}
                 tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={36} />
-              <Tooltip content={customTooltip} />
+              <Tooltip content={revenueTooltip} />
               <Line type="monotone" dataKey="product_revenue" stroke="#B8752A" strokeWidth={2.5}
                 dot={false} activeDot={{ r: 5, fill: '#B8752A' }} name="product_revenue" />
               <Line type="monotone" dataKey="delivery_revenue" stroke="#8C7355" strokeWidth={2}
@@ -332,8 +402,8 @@ export default function AnalyticsPage() {
                   tickLine={false} axisLine={false}
                   tickFormatter={s => s?.replace('_', '\n')} />
                 <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={28} />
-                <Tooltip content={customTooltip} />
-                <Bar dataKey="count" fill="#B8752A" radius={[3, 3, 0, 0]} name="orders" />
+                <Tooltip content={statusTooltip} />
+                <Bar dataKey="count" fill="#B8752A" radius={[3, 3, 0, 0]} name="orders" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -404,9 +474,9 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis yAxisId="left" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
-                <Tooltip content={customTooltip} />
-                <Bar yAxisId="left" dataKey="revenue" fill="#B8752A" radius={[3, 3, 0, 0]} name="Avg Revenue (UGX)" />
-                <Bar yAxisId="right" dataKey="orders" fill="#D4A574" radius={[3, 3, 0, 0]} name="Avg Orders" />
+                <Tooltip content={specialDaysTooltip} cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
+                <Bar yAxisId="left" dataKey="revenue" fill="#B8752A" radius={[3, 3, 0, 0]} name="Avg Revenue (UGX)" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
+                <Bar yAxisId="right" dataKey="orders" fill="#D4A574" radius={[3, 3, 0, 0]} name="Avg Orders" cursor={{ fill: 'rgba(184,117,42,0.08)' }} />
                 <Legend />
               </BarChart>
             </ResponsiveContainer>
@@ -432,7 +502,7 @@ export default function AnalyticsPage() {
                 </defs>
                 <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fill: '#8C7355', fontSize: 10 }} tickLine={false} axisLine={false} width={36} />
-                <Tooltip content={customTooltip} />
+                <Tooltip content={growthTooltip} />
                 <Area type="monotone" dataKey="cumulative" stroke="#B8752A" strokeWidth={2} fillOpacity={1} fill="url(#colorCumulative)" />
               </AreaChart>
             </ResponsiveContainer>
