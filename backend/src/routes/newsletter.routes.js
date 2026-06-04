@@ -8,7 +8,6 @@ const { newsletterLimiter } = require('../middleware/rateLimiter');
 const { validate } = require('../middleware/validate');
 const { newsletterSubscribeSchema } = require('../middleware/schemas');
 const { validateEmailDeliverability } = require('../utils/emailValidator');
-const resendAudience = require('../services/resend.audience.service');
 
 router.post('/subscribe', newsletterLimiter, optionalAuth, validate(newsletterSubscribeSchema), async (req, res, next) => {
   try {
@@ -58,11 +57,6 @@ router.post('/subscribe', newsletterLimiter, optionalAuth, validate(newsletterSu
       logger.warn('Newsletter welcome email failed', { email: normalised, error: emailErr.message });
     }
 
-    // Sync to Resend Audience (non-blocking)
-    resendAudience.addContact(normalised, name.trim()).catch(err =>
-      logger.warn('Resend Audience sync failed on subscribe', { email: normalised, error: err.message })
-    );
-
     return res.status(201).json({ success: true, already: false, message: 'Subscribed successfully.' });
   } catch (err) {
     next(err);
@@ -79,11 +73,6 @@ router.get('/unsubscribe', async (req, res, next) => {
     const { rowCount } = await query(
       `UPDATE newsletter_subscribers SET is_active = false, subscribed = false WHERE email = $1`,
       [email]
-    );
-
-    // Sync unsubscribe to Resend Audience (non-blocking)
-    resendAudience.removeContact(email).catch(err =>
-      logger.warn('Resend Audience sync failed on unsubscribe', { email, error: err.message })
     );
 
     // Render a simple branded confirmation page

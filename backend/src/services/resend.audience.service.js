@@ -1,13 +1,13 @@
 'use strict';
-// resend.audience.service.js
-// Manages Resend Audiences/Contacts in sync with our newsletter_subscribers table.
+// resend.contact.service.js
+// Manages newsletter delivery via Resend.
+// PostgreSQL is the source of truth for subscribers.
 
 const { Resend } = require('resend');
 const { logger } = require('../config/logger');
 const { query } = require('../config/db');
 
 let resend = null;
-const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
 
 function getClient() {
   if (!resend && process.env.RESEND_API_KEY) {
@@ -17,70 +17,9 @@ function getClient() {
 }
 
 /**
- * Add a single contact to the Resend audience.
- * Called when a new subscriber joins the newsletter.
- * Silently skips if RESEND_AUDIENCE_ID is not configured.
- *
- * @param {string} email
- * @param {string} [name]
- */
-async function addContact(email, name = '') {
-  const client = getClient();
-  if (!client || !AUDIENCE_ID) {
-    logger.info('Resend Audience not configured — skipping addContact', { email });
-    return;
-  }
-
-  try {
-    const [firstName, ...rest] = (name || '').trim().split(' ');
-    await client.contacts.create({
-      audienceId:  AUDIENCE_ID,
-      email:       email.toLowerCase(),
-      firstName:   firstName || '',
-      lastName:    rest.join(' ') || '',
-      unsubscribed: false,
-    });
-    logger.info('Added contact to Resend Audience', { email });
-  } catch (err) {
-    // 422 = already exists — treat as success
-    if (err?.statusCode === 422 || err?.message?.includes('already exists')) {
-      logger.info('Contact already in Resend Audience', { email });
-      return;
-    }
-    logger.warn('Failed to add contact to Resend Audience', { email, error: err.message });
-    // Do not throw — Resend sync failure should never block subscription
-  }
-}
-
-/**
- * Remove a contact from the Resend audience (on unsubscribe).
- *
- * @param {string} email
- */
-async function removeContact(email) {
-  const client = getClient();
-  if (!client || !AUDIENCE_ID) return;
-
-  try {
-    // First find the contact by email to get their ID
-    const contacts = await client.contacts.list({ audienceId: AUDIENCE_ID });
-    const contact  = contacts?.data?.find(c => c.email === email.toLowerCase());
-
-    if (!contact) {
-      logger.info('Contact not found in Resend Audience (already removed)', { email });
-      return;
-    }
-
-    await client.contacts.remove({ audienceId: AUDIENCE_ID, id: contact.id });
-    logger.info('Removed contact from Resend Audience', { email });
-  } catch (err) {
-    logger.warn('Failed to remove contact from Resend Audience', { email, error: err.message });
-  }
-}
-
-/**
  * Send a batch campaign using the Resend Batch API.
  * Sends up to 100 emails per API call.
+ * PostgreSQL subscribers table is the source of truth.
  *
  * @param {Array<{email: string, name: string}>} subscribers
  * @param {string} subject
@@ -127,7 +66,7 @@ async function sendBatchCampaign(subscribers, subject, htmlBuilder, from) {
       logger.info(`Campaign batch sent`, { batch: Math.floor(i / BATCH_SIZE) + 1, count: chunk.length });
 
     } catch (batchErr) {
-      logger.warn(`Batch failed, falling back to individual sends for chunk`, { error: batchErr.message });
+      logger.warn(`Batch failed, falling back to individual sends`, { error: batchErr.message });
 
       for (const sub of chunk) {
         try {
@@ -150,46 +89,6 @@ async function sendBatchCampaign(subscribers, subject, htmlBuilder, from) {
   return { sent, failed, failedEmails };
 }
 
-/**
- * Sync all active newsletter subscribers from PostgreSQL to Resend Audience.
- * One-time operation (or run when you want a full sync).
- *
- * @returns {{ synced: number, failed: number }}
- */
-async function syncAllSubscribersToAudience() {
-  const client = getClient();
-  if (!client || !AUDIENCE_ID) {
-    throw new Error('RESEND_AUDIENCE_ID not configured. Set it in .env first.');
-  }
-
-  const { rows: subs } = await query(`
-    SELECT email, name FROM newsletter_subscribers
-    WHERE is_active = true
-    ORDER BY subscribed_at ASC
-  `);
-
-  logger.info(`Starting full subscriber sync to Resend Audience`, { count: subs.length });
-
-  let synced = 0;
-  let failed = 0;
-
-  for (const sub of subs) {
-    try {
-      await addContact(sub.email, sub.name);
-      synced++;
-    } catch (err) {
-      failed++;
-      logger.warn('Sync failed for subscriber', { email: sub.email, error: err.message });
-    }
-  }
-
-  logger.info(`Subscriber sync complete`, { synced, failed });
-  return { synced, failed };
-}
-
 module.exports = {
-  addContact,
-  removeContact,
   sendBatchCampaign,
-  syncAllSubscribersToAudience,
 };
