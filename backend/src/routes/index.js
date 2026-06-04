@@ -10,6 +10,10 @@ const { getServerTime, validateTimeSync, enforceTimeValidation } = require('../m
 router.head('/server-time', getServerTime);
 router.get('/server-time', getServerTime);
 
+// ── Webhook endpoints (no auth, no time validation) ─────────────────────────
+// Must be before timeValidation middleware since they verify their own signatures
+router.use('/webhooks/resend', require('./webhooks/resend.webhook'));
+
 // ── Time validation middleware (applies to all routes) ──────────────────────
 // Extracts X-Client-Time header and validates clock skew
 router.use(validateTimeSync);
