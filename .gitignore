@@ -77,6 +77,8 @@ LUCIDE_UPGRADE_PLAN.md
 # ── Root-level documentation (keep only essential: README.md, LICENSE) ────
 /*.md
 !README.md
+!HAIQ_PROJECT_MASTER_LOG.md
+!startup.md
 
 # ── SENSITIVE DOCUMENTATION — Files that may contain credentials/secrets
 million.md
