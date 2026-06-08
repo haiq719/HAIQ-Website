@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import Crown from '../components/shared/Crown'
+import { RegisterSEO } from '../components/shared/SEO'
 import Button from '../components/shared/Button'
 
 export default function RegisterPage() {
@@ -71,6 +72,7 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-dark min-h-[85vh] flex items-center justify-center px-6 py-16">
+      <RegisterSEO />
       <div className="w-full max-w-sm">
 
         <Crown size={20} color="#B8752A" className="mb-6 opacity-55" />

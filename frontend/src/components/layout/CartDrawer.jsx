@@ -103,9 +103,9 @@ function SingleCartItem({ item, onRemove, onQtyChange }) {
     <div className="flex gap-3 py-4" style={{ borderBottom: '1px solid rgba(184,117,42,0.12)' }}>
       <div className="w-14 h-14 flex-shrink-0 overflow-hidden" style={{ background: '#2A1200' }}>
         {item.imageUrl
-          ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+          ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
           : <div className="w-full h-full flex items-center justify-center">
-              <img src="/HAIQmain.png" alt="" className="w-7 h-7 object-contain opacity-20" />
+              <img src="/HAIQmain.png" alt="" className="w-7 h-7 object-contain opacity-20" loading="lazy" />
             </div>
         }
       </div>

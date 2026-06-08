@@ -101,7 +101,7 @@ export default function ProductDetailPage() {
 
           {/* ── Left: Images ── */}
           <div className="md:sticky md:top-24 self-start">
-            <ProductImageCarousel images={product.images} />
+            <ProductImageCarousel images={product.images} productName={product.name} />
           </div>
 
           {/* ── Right: Info ── */}

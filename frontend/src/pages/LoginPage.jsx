@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
+import { LoginSEO } from '../components/shared/SEO'
 
 export default function LoginPage() {
   const navigate  = useNavigate()
@@ -39,6 +40,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ background: '#1A0A00', minHeight: '85vh' }} className="flex items-center justify-center px-6 py-16">
+      <LoginSEO />
       <div className="w-full max-w-sm">
 
         {/* 10% — amber accent mark */}
