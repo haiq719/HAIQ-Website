@@ -188,3 +188,66 @@ export function FAQSeo() {
     />
   )
 }
+
+export function ContactSEO() {
+  return (
+    <SEO
+      title="Contact Us — HAIQ Bakery Kampala"
+      description="Get in touch with HAIQ Bakery. We're based in Muyenga, Kampala. Send us a message and we'll get back to you."
+      url="/contact"
+      breadcrumbs={[{ name: 'HAIQ Bakery', url: '/' }, { name: 'Contact', url: '/contact' }]}
+    />
+  )
+}
+
+export function MomentsSEO() {
+  return (
+    <SEO
+      title="Moments — HAIQ Bakery"
+      description="Real moments from real HAIQ customers. See how our handcrafted cookies are enjoyed across Kampala."
+      url="/moments"
+      breadcrumbs={[{ name: 'HAIQ Bakery', url: '/' }, { name: 'Moments', url: '/moments' }]}
+    />
+  )
+}
+
+export function BuildYourBoxSEO() {
+  return (
+    <SEO
+      title="Build Your Box — Custom Cookie Box from UGX 40,000"
+      description="Pick exactly 4 cookie flavours and build your own HAIQ cookie box. Fresh-baked and delivered in Kampala. From UGX 40,000."
+      url="/build-your-box"
+      breadcrumbs={[{ name: 'HAIQ Bakery', url: '/' }, { name: 'Build Your Box', url: '/build-your-box' }]}
+    />
+  )
+}
+
+export function LoginSEO() {
+  return <SEO title="Login — HAIQ Bakery" description="Sign in to your HAIQ Bakery account." url="/login" noindex={true} />
+}
+
+export function RegisterSEO() {
+  return <SEO title="Create Account — HAIQ Bakery" description="Create a HAIQ Bakery account to track orders and save your details." url="/register" noindex={true} />
+}
+
+export function PrivacySEO() {
+  return (
+    <SEO
+      title="Privacy Policy — HAIQ Bakery"
+      description="How HAIQ Bakery collects, uses, and protects your personal data."
+      url="/privacy"
+      noindex={true}
+    />
+  )
+}
+
+export function TermsSEO() {
+  return (
+    <SEO
+      title="Terms of Use — HAIQ Bakery"
+      description="Terms and conditions for using the HAIQ Bakery website and placing orders."
+      url="/terms"
+      noindex={true}
+    />
+  )
+}

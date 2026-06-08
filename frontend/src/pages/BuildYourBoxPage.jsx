@@ -3,6 +3,7 @@ import api from '../services/api'
 import { useCart } from '../context/CartContext'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
+import { BuildYourBoxSEO } from '../components/shared/SEO'
 import TimeWarning from '../components/TimeWarning'
 import {
   getServerTime,
@@ -161,6 +162,7 @@ export default function BuildYourBoxPage() {
 
   return (
     <div style={{ background: '#0E0600', minHeight: '100vh' }}>
+      <BuildYourBoxSEO />
 
       <div className="border-b py-14 md:py-20 px-6 md:px-16" style={{ borderColor: 'rgba(184,117,42,0.2)' }}>
         <div className="flex items-center gap-3 mb-4">

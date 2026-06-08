@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Private / transactional pages — do not index
+Disallow: /account
+Disallow: /checkout
+Disallow: /order-confirmation
+Disallow: /payment-confirmation
+Disallow: /track
+Disallow: /reset-password
+Disallow: /forgot-password
+
+# Sitemap location
+Sitemap: https://haiq.ug/sitemap.xml

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import DOMPurify from 'dompurify'
 import api from '../services/api'
 import Button from '../components/shared/Button'
+import { ContactSEO } from '../components/shared/SEO'
 
 // SVG Icons
 const PhoneIcon = () => (
@@ -147,6 +148,7 @@ export default function ContactPage() {
 
   return (
     <div className="bg-light min-h-screen">
+      <ContactSEO />
 
       {/* Hero bar */}
       <div className="bg-dark text-light py-16">

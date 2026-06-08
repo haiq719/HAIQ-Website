@@ -1,4 +1,5 @@
 import Crown from '../components/shared/Crown'
+import { MomentsSEO } from '../components/shared/SEO'
 
 const ALL_MOMENTS = [
   { src: '/images/moments/moment_01.jpg', caption: 'The Blackout. Undivided attention.',       sub: 'Kampala, 2025' },
@@ -36,6 +37,7 @@ function MomentCard({ moment }) {
 export default function MomentsPage() {
   return (
     <div className="bg-dark min-h-screen">
+      <MomentsSEO />
 
       {/* Hero header */}
       <div className="border-b border-primary/20 py-20 md:py-28 px-6 md:px-16">
