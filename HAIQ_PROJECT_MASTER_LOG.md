@@ -787,6 +787,59 @@ node create-admin.js
 | `df15493` | Feat(newsletter): Resend batch campaign infrastructure |
 | `4d13721` | Refactor(resend): simplify to contact-only model |
 | `7c7dfc6` | Feat(webhook): Resend webhook handler — auto-unsubscribe on bounce |
+| `e339142` | Feat(time-sync): add client-side time sync utilities and warning component |
+
+---
+
+## 17. Session Work — June 11, 2026
+
+### Frontend Time Synchronisation Implementation (Commit e339142)
+
+**What was done:** Implemented missing frontend time synchronisation layer to wire up backend clock-skew detection system.
+
+**Files created:**
+- `frontend/src/utils/timeSync.js` — 130 lines
+- `frontend/src/components/TimeWarning.jsx` — 65 lines
+
+**What each file does:**
+
+`timeSync.js` exports:
+- `getServerTime()` — async fetch from `/v1/server-time`, caches for 10s
+- `calculateClockSkew(serverDate?, clientDate?)` — supports both explicit dates and cached server time
+- `isTimeValid(tolerance)` — boolean check against threshold
+- `addClientTimeHeader(headers)` — injects X-Client-Time ISO string for order POST
+- `CLOCK_SKEW_TOLERANCE_SECONDS = 300`, `CRITICAL_SKEW_THRESHOLD = 3600` — thresholds matching backend
+- `formatSkewTime(seconds)` — display helper (e.g. "5 minutes")
+
+`TimeWarning.jsx` component accepts props:
+- `skewSeconds` — current clock skew in seconds
+- `isVisible` — whether to show
+- `onRefresh()` — callback for refresh button
+- Renders amber warning banner for 300s–3600s skew
+- Uses lucide `AlertTriangle` icon, no emojis
+- On-brand HAIQ colour palette
+
+**Why this approach:**
+- CheckoutPage and BuildYourBoxPage already had time-sync imports and logic; utility module was missing
+- Thresholds exactly match backend (`validateTimeSync` middleware in `backend/src/middleware/timeValidation.js`)
+- Backend enforces 3600s critical block at order POST; frontend warns at 300s to give user time to fix before reaching checkout
+- Flexible `calculateClockSkew()` signature allows pages to use explicit dates (from state) or cached time
+
+**Challenges faced:** None — design was already in place in the pages, utility just needed to be created.
+
+**Solution chosen:** Straightforward utility module with flexible signature for compatibility with existing page code.
+
+**Verification:**
+- ✅ Frontend builds without errors (vite build succeeds)
+- ✅ Backend `/v1/server-time` endpoint responds with correct JSON
+- ✅ Dev server starts correctly with new imports
+- ✅ Committed and pushed to main; Vercel auto-deploy initiated
+
+**Next steps:**
+1. Verify Vercel deployment completes (~90 seconds)
+2. Test time sync in staging: artificially offset system clock, load BuildYourBoxPage, confirm TimeWarning renders
+3. Test checkout blocking: offset by >1 hour, attempt order submission, verify 400 error from backend
+4. After verification: move to backlog tasks (password reset E2E, special days E2E test, CI pipeline)
 
 ---
 
