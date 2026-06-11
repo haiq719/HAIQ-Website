@@ -1,5 +1,9 @@
 // src/routes/admin/index.js
 const router = require('express').Router();
+const { adminAuditMiddleware } = require('../../middleware/adminAudit');
+
+// Apply audit logging to all admin routes
+router.use(adminAuditMiddleware);
 
 router.use('/auth',        require('./admin.auth.routes'));
 router.use('/orders',      require('./admin.orders.routes'));
