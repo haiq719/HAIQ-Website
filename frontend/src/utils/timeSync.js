@@ -1,170 +1,130 @@
 /**
- * Time Synchronization Utility
- * Handles client-server time validation to prevent order inconsistencies
- * from users with incorrect system time settings
+ * Time Synchronisation Utility
+ * Frontend clock skew detection and X-Client-Time header injection
  *
- * Security: Uses Uganda timezone (Africa/Kampala UTC+3) as standard
- * Tolerances: 5 minutes warning, 1 hour hard block (industry standards)
+ * Purpose: Detect when a user's device time is incorrect and prevent
+ * order submission if the clock is off by more than 1 hour.
+ *
+ * Thresholds:
+ * - 300s (5 min): Show warning banner
+ * - 3600s (1 hour): Block order submission
  */
 
-// Constants - Best practice security thresholds
-export const CLOCK_SKEW_TOLERANCE_SECONDS = 300 // 5 minutes (HTTP standard)
-export const CRITICAL_SKEW_THRESHOLD = 3600 // 1 hour (hard block for orders)
-export const TIMEZONE = 'Africa/Kampala' // Uganda standard
-export const TIMEZONE_OFFSET_HOURS = 3 // UTC+3
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
-// Cache for server time (to avoid repeated fetches)
+// Thresholds (match backend constants exactly)
+export const CLOCK_SKEW_TOLERANCE_SECONDS = 300 // Show warning at 5 min
+export const CRITICAL_SKEW_THRESHOLD = 3600 // Block orders at 1 hour
+
+// Cache server time to avoid repeated requests
 let cachedServerTime = null
 let cacheTimestamp = null
-const CACHE_DURATION_MS = 30000 // 30 seconds
+const CACHE_DURATION_MS = 10000 // Refresh every 10 seconds
 
 /**
- * Fetch server's authoritative time from backend
- * Returns ISO string in UTC (server timezone: Africa/Kampala UTC+3)
- *
- * @returns {Promise<Date>} Server time as Date object
+ * Fetch server time from backend
+ * Caches result for 10 seconds to avoid spamming the server
  */
-export const getServerTime = async () => {
+export async function getServerTime() {
   const now = Date.now()
 
-  // Return cached value if fresh (within 30 seconds)
-  if (cachedServerTime && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION_MS) {
-    return new Date(cachedServerTime)
+  // Return cached time if still fresh
+  if (cachedServerTime && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION_MS) {
+    return cachedServerTime
   }
 
   try {
-    const response = await fetch('/api/server-time', {
-      method: 'HEAD',
-      credentials: 'include',
+    const res = await fetch(`${API_BASE}/v1/server-time`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     })
 
-    // Get server time from response header
-    const serverTimeHeader = response.headers.get('X-Server-Time')
-    if (!serverTimeHeader) {
-      console.warn('[TimeSync] Server time header missing, using client time as fallback')
+    if (!res.ok) {
+      console.error('[TimeSync] Failed to fetch server time:', res.status)
+      // Return client time as fallback
       return new Date()
     }
 
-    // Cache the server time
-    cachedServerTime = serverTimeHeader
+    const data = await res.json()
+    cachedServerTime = new Date(data.server_time)
     cacheTimestamp = now
 
-    return new Date(serverTimeHeader)
+    return cachedServerTime
   } catch (error) {
-    console.error('[TimeSync] Failed to fetch server time:', error)
-    // Graceful fallback - return client time if server unavailable
+    console.error('[TimeSync] Error fetching server time:', error)
+    // Fail gracefully — return client time if server unreachable
     return new Date()
   }
 }
 
 /**
- * Get client's current system time
- *
- * @returns {Date} Client's current time
+ * Get current client time
  */
-export const getClientTime = () => {
+export function getClientTime() {
   return new Date()
 }
 
 /**
- * Calculate clock skew between client and server
- * Returns absolute difference in seconds
+ * Calculate absolute clock skew in seconds
  *
- * @param {Date} serverTime - Server time from backend
- * @param {Date} clientTime - Client system time
- * @returns {number} Skew in seconds (always positive)
+ * Can be called two ways:
+ * - calculateClockSkew(serverDate, clientDate) - explicit dates
+ * - calculateClockSkew() - uses cached server time from getServerTime()
+ *
+ * @param {Date} serverDate - Optional server time (if omitted, uses cached)
+ * @param {Date} clientDate - Optional client time (if omitted, uses current time)
+ * @returns {number} Absolute difference in seconds
  */
-export const calculateClockSkew = (serverTime, clientTime) => {
-  const skewMs = Math.abs(serverTime.getTime() - clientTime.getTime())
+export function calculateClockSkew(serverDate, clientDate) {
+  // If explicit dates provided, use them
+  if (serverDate && clientDate) {
+    const skewMs = Math.abs(serverDate.getTime() - clientDate.getTime())
+    return Math.round(skewMs / 1000)
+  }
+
+  // Otherwise use cached server time
+  if (!cachedServerTime) {
+    return 0
+  }
+
+  const clientTime = new Date()
+  const skewMs = Math.abs(clientTime.getTime() - cachedServerTime.getTime())
   return Math.round(skewMs / 1000) // Convert to seconds
 }
 
 /**
- * Check if current time is valid for order submission
- * Returns true if skew is within acceptable range
- *
- * @param {Date} serverTime - Server time
- * @param {Date} clientTime - Client time
- * @param {number} tolerance - Tolerance in seconds (default: 5 min)
- * @returns {boolean} True if time is valid
+ * Check if time is valid within tolerance
+ * @param {number} toleranceSeconds - Max acceptable skew in seconds
+ * @returns {boolean} true if skew <= tolerance
  */
-export const isTimeValid = (serverTime, clientTime, tolerance = CLOCK_SKEW_TOLERANCE_SECONDS) => {
-  const skew = calculateClockSkew(serverTime, clientTime)
-  return skew <= tolerance
+export function isTimeValid(toleranceSeconds = CRITICAL_SKEW_THRESHOLD) {
+  return calculateClockSkew() <= toleranceSeconds
 }
 
 /**
- * Check if time difference is critical (user should be blocked)
+ * Add X-Client-Time header to fetch request
+ * Used by CheckoutPage when submitting orders
  *
- * @param {Date} serverTime - Server time
- * @param {Date} clientTime - Client time
- * @returns {boolean} True if skew exceeds critical threshold
+ * Usage:
+ * const headers = addClientTimeHeader({})
+ * fetch(url, { method: 'POST', headers, body })
  */
-export const isTimeCritical = (serverTime, clientTime) => {
-  const skew = calculateClockSkew(serverTime, clientTime)
-  return skew > CRITICAL_SKEW_THRESHOLD
-}
-
-/**
- * Format user-friendly error message based on clock skew
- *
- * @param {number} skewSeconds - Clock skew in seconds
- * @returns {string} User-friendly error message
- */
-export const formatTimeError = (skewSeconds) => {
-  const skewMinutes = Math.round(skewSeconds / 60)
-  const ahead = skewSeconds > 0 ? 'ahead' : 'behind' // Note: skew is always positive
-
-  if (skewSeconds > CRITICAL_SKEW_THRESHOLD) {
-    return `Your device time is off by ${skewMinutes} minutes. Please correct your system date and time before placing an order. Go to Settings → Date & Time to sync your device.`
-  }
-
-  if (skewSeconds > CLOCK_SKEW_TOLERANCE_SECONDS) {
-    return `Your device time appears to be off by ${skewMinutes} minutes. Please correct it to ensure orders process correctly.`
-  }
-
-  return 'Your system time is correct.'
-}
-
-/**
- * Initialize time synchronization on app load
- * Fetches server time once on startup and caches it
- *
- * @returns {Promise<Object>} Object with serverTime, clientTime, skew, valid
- */
-export const initializeTimeSync = async () => {
-  try {
-    const serverTime = await getServerTime()
-    const clientTime = getClientTime()
-    const skew = calculateClockSkew(serverTime, clientTime)
-    const valid = skew <= CRITICAL_SKEW_THRESHOLD
-
-    console.log('[TimeSync] Initialized', {
-      serverTime: serverTime.toISOString(),
-      clientTime: clientTime.toISOString(),
-      skewSeconds: skew,
-      valid,
-      timezone: TIMEZONE,
-    })
-
-    return { serverTime, clientTime, skew, valid }
-  } catch (error) {
-    console.error('[TimeSync] Initialization failed:', error)
-    return { valid: true } // Assume valid if sync fails (graceful degradation)
-  }
-}
-
-/**
- * Add client time to request headers for server validation
- *
- * @param {Object} headers - Request headers object
- * @returns {Object} Headers with X-Client-Time added
- */
-export const addClientTimeHeader = (headers = {}) => {
+export function addClientTimeHeader(headers = {}) {
   return {
     ...headers,
     'X-Client-Time': new Date().toISOString(),
   }
+}
+
+/**
+ * Format skew for display
+ */
+export function formatSkewTime(seconds) {
+  if (seconds < 60) {
+    return `${seconds} seconds`
+  }
+  const minutes = Math.round(seconds / 60)
+  return `${minutes} minutes`
 }
 
 export default {
@@ -172,12 +132,8 @@ export default {
   getClientTime,
   calculateClockSkew,
   isTimeValid,
-  isTimeCritical,
-  formatTimeError,
-  initializeTimeSync,
   addClientTimeHeader,
+  formatSkewTime,
   CLOCK_SKEW_TOLERANCE_SECONDS,
   CRITICAL_SKEW_THRESHOLD,
-  TIMEZONE,
-  TIMEZONE_OFFSET_HOURS,
 }

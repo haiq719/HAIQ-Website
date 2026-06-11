@@ -1,95 +1,74 @@
+import { AlertTriangle } from 'lucide-react'
+import { CLOCK_SKEW_TOLERANCE_SECONDS, CRITICAL_SKEW_THRESHOLD, formatSkewTime } from '../utils/timeSync'
+
 /**
  * TimeWarning Component
- * Displays warning banner when user's system time is incorrect
- * Helps users understand time validation failures
+ * Shows when device clock is off by 5–60 minutes (300s–3600s)
+ *
+ * Props:
+ * - skewSeconds: Number - clock skew in seconds
+ * - isVisible: Boolean - whether to show the warning
+ * - onRefresh: Function - callback to refresh time check
  */
+export default function TimeWarning({ skewSeconds = 0, isVisible = false, onRefresh }) {
+  // Don't show if explicitly hidden or if skew is in safe zone
+  if (!isVisible || skewSeconds <= CLOCK_SKEW_TOLERANCE_SECONDS) {
+    return null
+  }
 
-import { AlertCircle, Clock } from 'lucide-react'
-import { CLOCK_SKEW_TOLERANCE_SECONDS, CRITICAL_SKEW_THRESHOLD, formatTimeError } from '../utils/timeSync'
-
-export default function TimeWarning({ skewSeconds, isVisible, onRefresh, variant = 'warning' }) {
-  if (!isVisible || !skewSeconds) return null
-
-  // Determine warning type and styling
-  const isError = skewSeconds > CRITICAL_SKEW_THRESHOLD
-  const isWarning = skewSeconds > CLOCK_SKEW_TOLERANCE_SECONDS && !isError
-
-  if (!isError && !isWarning) return null
-
-  const bgColor = isError ? 'rgba(248, 113, 113, 0.15)' : 'rgba(232, 200, 138, 0.15)'
-  const borderColor = isError ? '#f87171' : '#E8C88A'
-  const textColor = isError ? '#f87171' : '#E8C88A'
-  const iconColor = isError ? '#f87171' : '#B8752A'
-
-  const message = formatTimeError(skewSeconds)
-  const title = isError ? 'System Time Error' : 'Time Mismatch Detected'
+  const skewDisplay = formatSkewTime(skewSeconds)
+  const isCritical = skewSeconds > CRITICAL_SKEW_THRESHOLD
 
   return (
     <div
-      className="p-4 rounded-lg border mb-4"
+      className="mb-6 p-4 rounded-sm border-l-4 flex gap-3 items-start"
       style={{
-        background: bgColor,
-        border: `1px solid ${borderColor}`,
+        background: isCritical
+          ? 'rgba(248, 113, 113, 0.1)' // Red at 10% for critical
+          : 'rgba(184, 117, 42, 0.1)', // Amber at 10% for warning
+        borderColor: isCritical ? '#f87171' : '#B8752A',
       }}
+      role="alert"
     >
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        <div className="flex-shrink-0 pt-0.5">
-          {isError ? (
-            <AlertCircle size={20} strokeWidth={2} style={{ color: iconColor }} />
-          ) : (
-            <Clock size={20} strokeWidth={2} style={{ color: iconColor }} />
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1">
-          <h3 className="font-semibold text-sm mb-1" style={{ color: textColor }}>
-            {title}
-          </h3>
-          <p className="text-sm text-light/60 mb-3">{message}</p>
-
-          {/* Action buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={onRefresh}
-              className="text-xs px-3 py-1.5 rounded font-semibold transition-colors"
-              style={{
-                background: textColor,
-                color: '#1A0A00',
-              }}
-              onMouseEnter={(e) => (e.target.style.opacity = '0.9')}
-              onMouseLeave={(e) => (e.target.style.opacity = '1')}
-            >
-              Check Again
-            </button>
-
-            {!isError && (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  // Show system settings link info
-                  alert('Please go to your device Settings → Date & Time to correct your system time.')
-                }}
-                className="text-xs px-3 py-1.5 rounded font-semibold transition-colors"
-                style={{
-                  background: 'transparent',
-                  border: `1px solid ${textColor}`,
-                  color: textColor,
-                }}
-              >
-                Fix Time
-              </a>
-            )}
-          </div>
-
-          {isError && (
-            <p className="text-xs mt-3 text-light/40">
-              Orders are blocked until your system time is corrected. This prevents inconsistencies in our system.
-            </p>
-          )}
-        </div>
+      <AlertTriangle
+        size={16}
+        strokeWidth={1.5}
+        style={{
+          color: isCritical ? '#f87171' : '#B8752A',
+          flexShrink: 0,
+          marginTop: '2px',
+        }}
+        aria-hidden="true"
+      />
+      <div className="flex-1">
+        <p
+          className="text-sm font-semibold"
+          style={{ color: isCritical ? '#f87171' : '#B8752A' }}
+        >
+          {isCritical ? 'Critical Time Mismatch' : 'Device Time Mismatch'}
+        </p>
+        <p
+          className="text-xs mt-1"
+          style={{ color: '#8C7355' }}
+        >
+          Your device time is off by {skewDisplay}. Please sync your date and time
+          settings to ensure orders process correctly.
+        </p>
+        <p
+          className="text-[11px] mt-2 opacity-70"
+          style={{ color: '#8C7355' }}
+        >
+          Settings → Date & Time → Sync automatically
+        </p>
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="mt-2 text-xs font-medium transition-opacity hover:opacity-80"
+            style={{ color: '#B8752A' }}
+          >
+            Refresh time check
+          </button>
+        )}
       </div>
     </div>
   )
