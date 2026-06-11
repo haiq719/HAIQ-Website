@@ -1,15 +1,41 @@
 const { logger } = require('../config/logger');
+const { query } = require('../config/db');
 
 function errorHandler(err, req, res, next) {
   // Log full error
+  const userId = req.user?.id || null;
+  const adminId = req.admin?.id || null;
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
   logger.error('Unhandled error', {
     message:  err.message,
     stack:    err.stack,
     path:     req.path,
     method:   req.method,
-    userId:   req.user?.id,
-    adminId:  req.admin?.id,
+    userId:   userId,
+    adminId:  adminId,
   });
+
+  // Persist to error_logs table (non-blocking)
+  try {
+    query(
+      `INSERT INTO error_logs (message, stack_trace, pg_error_code, path, method, user_id, admin_id, ip, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        err.message?.substring(0, 1000),
+        err.stack?.substring(0, 5000),
+        err.code || null,
+        req.path?.substring(0, 500),
+        req.method,
+        userId,
+        adminId,
+        ip?.substring(0, 50),
+        JSON.stringify({ originalError: err.toString() })
+      ]
+    ).catch(() => {}); // Silent fail — don't block the response
+  } catch (logErr) {
+    // If we can't even queue the log, just continue
+  }
 
   // Determine status code
   let status = err.status || err.statusCode || 500;

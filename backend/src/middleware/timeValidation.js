@@ -6,6 +6,8 @@
  * Logs suspicious time mismatches for monitoring potential attacks
  */
 
+const { logger } = require('../config/logger');
+
 const CLOCK_SKEW_TOLERANCE_SECONDS = 300 // 5 minutes (HTTP standard)
 const CRITICAL_SKEW_THRESHOLD = 3600 // 1 hour (hard block for orders)
 const TIMEZONE_OFFSET_HOURS = 3 // Africa/Kampala UTC+3
@@ -72,7 +74,7 @@ export const validateTimeSync = (req, res, next) => {
 
     // Validate the date is valid
     if (isNaN(clientTime.getTime())) {
-      console.warn('[TimeValidation] Invalid client time format:', clientTimeHeader)
+      logger.warn('[TimeValidation] Invalid client time format:', clientTimeHeader)
       req.timeValidation = {
         clientTime: null,
         serverTime,
@@ -96,7 +98,7 @@ export const validateTimeSync = (req, res, next) => {
       const userId = req.user?.id || 'anonymous'
       const route = req.path
 
-      console.warn('[TimeValidation] Clock skew detected', {
+      logger.warn('[TimeValidation] Clock skew detected', {
         clientTime: clientTime.toISOString(),
         serverTime: serverTime.toISOString(),
         skewSeconds: skew,
@@ -119,7 +121,7 @@ export const validateTimeSync = (req, res, next) => {
 
     next()
   } catch (error) {
-    console.error('[TimeValidation] Error validating time:', error)
+    logger.error('[TimeValidation] Error validating time:', error)
     req.timeValidation = {
       clientTime: null,
       serverTime,
@@ -149,7 +151,7 @@ export const enforceTimeValidation = (req, res, next) => {
     const skewMinutes = Math.round(req.timeValidation.skew / 60)
 
     // Log the rejection
-    console.warn('[TimeValidation] Order blocked - critical time mismatch', {
+    logger.warn('[TimeValidation] Order blocked - critical time mismatch', {
       userId: req.user?.id || 'anonymous',
       ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
       skewSeconds: req.timeValidation.skew,
@@ -188,7 +190,7 @@ export const logTimeValidation = (req, res, next) => {
     return next()
   }
 
-  console.debug('[TimeValidation] Request received', {
+  logger.debug('[TimeValidation] Request received', {
     method: req.method,
     path: req.path,
     skew: req.timeValidation.skew,

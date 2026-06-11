@@ -15,14 +15,24 @@ function requestLogger(req, res, next) {
       userAgent: userAgent.substring(0, 100),
     });
 
-    // Persist to DB (async, non-blocking)
-    if (process.env.LOG_TO_DB === 'true') {
-      query(
+    // Always persist to DB (no env gate — logging is mandatory)
+    try {
+      await query(
         `INSERT INTO request_logs (method, path, status_code, duration_ms, ip, user_agent, user_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [method, reqPath.substring(0, 500), statusCode, duration,
-         ip?.substring(0, 50), userAgent.substring(0, 500), req.user?.id || null]
-      ).catch(() => {}); // ignore log write failures
+        [
+          method,
+          reqPath.substring(0, 500),
+          statusCode,
+          duration,
+          ip?.substring(0, 50),
+          userAgent.substring(0, 500),
+          req.user?.id || null
+        ]
+      );
+    } catch (err) {
+      // Don't let log write failure crash the app, but do log it
+      logger.error('Failed to write request log', { error: err.message });
     }
   });
 
