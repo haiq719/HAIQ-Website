@@ -17,5 +17,6 @@ router.use('/special-days', require('./admin.special_days.routes'));
 router.use('/delivery-zones', require('./admin.deliveryzones.routes'));
 
 router.use('/reviews', require('./admin.reviews.routes'));
+router.use('/maintenance', require('./admin.maintenance.routes'));
 
 module.exports = router;

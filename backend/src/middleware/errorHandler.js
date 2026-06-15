@@ -1,5 +1,6 @@
 const { logger } = require('../config/logger');
 const { query } = require('../config/db');
+const { sendErrorAlert } = require('../services/errorAlert.service');
 
 function errorHandler(err, req, res, next) {
   // Log full error
@@ -32,7 +33,13 @@ function errorHandler(err, req, res, next) {
         ip?.substring(0, 50),
         JSON.stringify({ originalError: err.toString() })
       ]
-    ).catch(() => {}); // Silent fail — don't block the response
+    ).then(() => {
+      // Send email alert for 500+ errors (non-blocking)
+      if (err.status >= 500 || err.statusCode >= 500) {
+        sendErrorAlert().catch(() => {}); // Silent fail
+      }
+    })
+    .catch(() => {}); // Silent fail — don't block the response
   } catch (logErr) {
     // If we can't even queue the log, just continue
   }
