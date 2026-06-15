@@ -201,7 +201,7 @@ export const logTimeValidation = (req, res, next) => {
   next()
 }
 
-export default {
+module.exports = {
   getServerTime,
   validateTimeSync,
   enforceTimeValidation,
@@ -209,4 +209,4 @@ export default {
   CLOCK_SKEW_TOLERANCE_SECONDS,
   CRITICAL_SKEW_THRESHOLD,
   TIMEZONE_OFFSET_HOURS,
-}
+};
