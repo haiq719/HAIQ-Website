@@ -1,0 +1,48 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily (9 AM EAT, 10 AM EEST)
+  workflow_dispatch:     # Allow manual triggering
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install backend dependencies
+        run: cd backend && npm ci --production
+
+      - name: Run database backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        run: cd backend && npm run backup:all
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Backup failed"
+          echo "Check GitHub Actions logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Daily backup completed successfully"
+          echo "Backups:"
+          echo "  - pg_dump: backend/backups/haiq-*.dump"
+          echo "  - Neon snapshot: Created via API"
