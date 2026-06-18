@@ -18,12 +18,24 @@ const CartContext = createContext(null);
 
 const parsePrice = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 const STORAGE_KEY = 'haiq_cart_items';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isValidUUID = (v) => typeof v === 'string' && UUID_RE.test(v);
+
+const isValidCartItem = (item) => {
+  if (item.itemType === 'box') {
+    return isValidUUID(item.boxProductId) && isValidUUID(item.boxVariantId);
+  }
+  return isValidUUID(item.productId) && isValidUUID(item.variantId);
+};
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      // Drop any items with invalid (non-UUID) IDs from old cart data
+      return Array.isArray(parsed) ? parsed.filter(isValidCartItem) : [];
     } catch {
       return [];
     }
