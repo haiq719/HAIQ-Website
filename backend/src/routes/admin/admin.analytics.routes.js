@@ -14,66 +14,75 @@ const { requireStaff } = require('../../middleware/adminAuth');
 router.get('/summary', requireStaff, async (req, res, next) => {
   try {
     const [
-      revenueRow,
       ordersRow,
+      revenueRow,
       customersRow,
-      newsletterRow,
-      revenue7dRows,
+      activeRow,
+      thisWeekRow,
+      lastWeekRow,
     ] = await Promise.all([
 
-      // All-time total revenue
+      // Total orders (all-time, all statuses)
+      query(`SELECT COUNT(*) AS total FROM orders`),
+
+      // Paid revenue — split product vs delivery
       query(`
-        SELECT COALESCE(SUM(total), 0) AS total_revenue
+        SELECT
+          COALESCE(SUM(total), 0)        AS total_revenue,
+          COALESCE(SUM(subtotal), 0)     AS product_revenue,
+          COALESCE(SUM(delivery_fee), 0) AS delivery_revenue
         FROM   orders
         WHERE  payment_status = 'paid'
       `),
 
-      // Orders today
+      // Total registered (non-guest) customers
+      query(`SELECT COUNT(*) AS total FROM users WHERE is_guest = false`),
+
+      // Active orders — paid but not yet delivered/cancelled
       query(`
-        SELECT COUNT(*) AS orders_today
+        SELECT COUNT(*) AS total
         FROM   orders
-        WHERE  created_at::date = CURRENT_DATE
+        WHERE  payment_status = 'paid'
+          AND  status NOT IN ('delivered', 'cancelled')
       `),
 
-      // Total registered customers
-      query(`SELECT COUNT(*) AS total_customers FROM users`),
-
-      // Active newsletter subscribers
+      // Revenue this week (from start of week)
       query(`
-        SELECT COUNT(*) AS newsletter_count
-        FROM   newsletter_subscribers
-        WHERE  is_active = true
+        SELECT COALESCE(SUM(total), 0) AS amount
+        FROM   orders
+        WHERE  payment_status = 'paid'
+          AND  created_at >= date_trunc('week', NOW())
       `),
 
-      // Last 7 days revenue — one row per day
+      // Revenue previous week (same window, shifted back 7 days)
       query(`
-        SELECT
-          TO_CHAR(day, 'Dy')           AS label,
-          COALESCE(SUM(o.total), 0)    AS total
-        FROM   generate_series(
-                 CURRENT_DATE - INTERVAL '6 days',
-                 CURRENT_DATE,
-                 INTERVAL '1 day'
-               ) AS day
-        LEFT   JOIN orders o
-               ON  o.created_at::date = day::date
-               AND o.payment_status   = 'paid'
-        GROUP  BY day
-        ORDER  BY day ASC
+        SELECT COALESCE(SUM(total), 0) AS amount
+        FROM   orders
+        WHERE  payment_status = 'paid'
+          AND  created_at >= date_trunc('week', NOW()) - INTERVAL '7 days'
+          AND  created_at <  date_trunc('week', NOW())
       `),
     ]);
 
-    const revenue7d      = revenue7dRows.rows;
-    const revenue7dTotal = revenue7d.reduce((s, r) => s + parseFloat(r.total), 0);
+    const thisWeek = parseFloat(thisWeekRow.rows[0].amount);
+    const lastWeek = parseFloat(lastWeekRow.rows[0].amount);
+    const weeklyChange = lastWeek === 0
+      ? null
+      : Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
 
     res.json({
-      success:          true,
-      total_revenue:    parseFloat(revenueRow.rows[0].total_revenue),
-      orders_today:     parseInt(ordersRow.rows[0].orders_today),
-      total_customers:  parseInt(customersRow.rows[0].total_customers),
-      newsletter_count: parseInt(newsletterRow.rows[0].newsletter_count),
-      revenue_7d:       revenue7d,
-      revenue_7d_total: revenue7dTotal,
+      success: true,
+      summary: {
+        total_orders:      parseInt(ordersRow.rows[0].total),
+        total_revenue:     parseFloat(revenueRow.rows[0].total_revenue),
+        product_revenue:   parseFloat(revenueRow.rows[0].product_revenue),
+        delivery_revenue:  parseFloat(revenueRow.rows[0].delivery_revenue),
+        total_customers:   parseInt(customersRow.rows[0].total),
+        active_orders:     parseInt(activeRow.rows[0].total),
+        revenue_this_week: thisWeek,
+        revenue_last_week: lastWeek,
+        weekly_change_pct: weeklyChange,
+      },
     });
   } catch (err) { next(err); }
 });
@@ -91,7 +100,7 @@ router.get('/top-customers', requireStaff, async (req, res, next) => {
         u.email,
         u.phone,
         u.loyalty_tier,
-        COUNT(o.id)::int               AS order_count,
+        COUNT(o.id)::int               AS total_orders,
         COALESCE(SUM(o.total), 0)      AS total_spent,
         MAX(o.created_at)              AS last_order_at
       FROM   users u
@@ -99,7 +108,7 @@ router.get('/top-customers', requireStaff, async (req, res, next) => {
       GROUP  BY u.id
       HAVING COUNT(o.id) > 0
       ORDER  BY total_spent DESC
-      LIMIT  3
+      LIMIT  10
     `);
 
     res.json({ success: true, customers: rows });

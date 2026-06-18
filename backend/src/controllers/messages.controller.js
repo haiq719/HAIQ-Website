@@ -17,8 +17,8 @@ async function create(req, res, next) {
 
     const { rows: [msg] } = await query(`
       INSERT INTO messages (
-        order_id, sender_type, sender_id, body, sender_name, sender_email, subject
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        order_id, sender_type, sender_id, body, sender_name, sender_email, subject, is_direct
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id, created_at
     `, [
       order_id || null,
@@ -28,6 +28,7 @@ async function create(req, res, next) {
       sender_name,
       sender_email,
       subject || null,
+      is_contact_form,
     ]);
 
     res.status(201).json({ success: true, message_id: msg.id, created_at: msg.created_at });

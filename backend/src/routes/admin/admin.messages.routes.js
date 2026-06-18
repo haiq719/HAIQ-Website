@@ -19,6 +19,8 @@ router.get('/', requireStaff, async (req, res, next) => {
         m.body,
         m.is_read,
         m.is_direct,
+        m.sender_name,
+        m.sender_email,
         m.created_at,
         o.order_number,
         o.first_name || ' ' || o.last_name AS order_customer,
@@ -28,7 +30,7 @@ router.get('/', requireStaff, async (req, res, next) => {
       LEFT JOIN orders o ON o.id = m.order_id
       LEFT JOIN users  u ON u.id = m.user_id
       WHERE m.sender_type IN ('customer', 'contact_form')
-        AND (m.is_direct = true OR m.order_id IS NOT NULL)
+        AND (m.is_direct = true OR m.order_id IS NOT NULL OR m.sender_type = 'contact_form')
       ORDER BY m.created_at DESC
     `);
 
