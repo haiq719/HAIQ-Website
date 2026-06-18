@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { MapPin, Banknote, Info } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
@@ -653,15 +654,18 @@ export default function CheckoutPage() {
                               background: 'rgba(184, 117, 42, 0.08)',
                               border: '1px solid rgba(184, 117, 42, 0.2)',
                             }}>
-                            <p className="text-xs mb-1" style={{ color: '#F2EAD8' }}>
-                              <span style={{ color: '#8C7355' }}>📍 Selected Zone:</span>{' '}
+                            <p className="text-xs mb-1 flex items-center gap-1.5" style={{ color: '#F2EAD8' }}>
+                              <MapPin size={12} style={{ color: '#8C7355', flexShrink: 0 }} />
+                              <span style={{ color: '#8C7355' }}>Selected Zone:</span>{' '}
                               <strong>{selectedZone.name}</strong>
                             </p>
-                            <p className="text-xs font-semibold" style={{ color: '#B8752A' }}>
-                              💰 Delivery Fee: UGX {selectedZone.price.toLocaleString()}
+                            <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: '#B8752A' }}>
+                              <Banknote size={12} style={{ flexShrink: 0 }} />
+                              Delivery Fee: UGX {selectedZone.price.toLocaleString()}
                             </p>
-                            <p className="text-[10px] mt-1.5" style={{ color: '#8C7355' }}>
-                              ℹ️ Estimated delivery. Final amount confirmed before dispatch.
+                            <p className="text-[10px] mt-1.5 flex items-center gap-1.5" style={{ color: '#8C7355' }}>
+                              <Info size={11} style={{ flexShrink: 0 }} />
+                              Estimated delivery. Final amount confirmed before dispatch.
                             </p>
                           </div>
                         )}

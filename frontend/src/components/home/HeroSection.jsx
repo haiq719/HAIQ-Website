@@ -67,8 +67,8 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Centre — headline + CTAs */}
-        <div className="flex-1 flex items-center px-8 md:px-20 md:pb-32">
+        {/* Centre — headline + CTAs. overflow:hidden prevents content bleeding into spec strip */}
+        <div className="flex-1 flex items-center px-8 md:px-20 overflow-hidden">
           <div className="max-w-3xl">
 
             <div style={show(60)} className="mb-5">
@@ -78,7 +78,7 @@ export default function HeroSection() {
             <h1
               className="font-serif font-bold leading-[0.93] mb-6"
               style={{
-                fontSize: 'clamp(3.8rem, 9.5vw, 9rem)',
+                fontSize: 'clamp(3rem, min(9.5vw, 13vh), 8.5rem)',
                 color: '#F2EAD8',
                 ...show(100),
               }}
@@ -151,9 +151,9 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Spec strip — absolute bottom so it never compresses the center content */}
+        {/* Spec strip — desktop only, in flow so it never overlaps content */}
         <div
-          className="hidden md:block absolute bottom-0 left-0 right-0 px-20 pb-10"
+          className="hidden md:block px-20 pb-10 flex-shrink-0"
           style={show(400)}
         >
           {/* Thin separator above spec strip */}

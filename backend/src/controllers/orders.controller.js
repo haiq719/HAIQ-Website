@@ -102,14 +102,15 @@ async function create(req, res, next) {
         subtotal += line_total
 
         resolvedItems.push({
-          product_id:    BOX_OFFICE_PRODUCT_UUID,
-          variant_id:    BOX_OFFICE_VARIANT_UUID,
+          product_id:    null,  // virtual — no row in products table
+          variant_id:    null,  // virtual — no row in product_variants table
           product_name:  'Box Office',
           variant_label: 'Standard Box',
           unit_price,
           quantity:      item.quantity,
           line_total,
           stock_qty:     999,
+          isVirtual:     true,
         })
         continue
       }
@@ -196,11 +197,13 @@ async function create(req, res, next) {
         item.unit_price, item.quantity, item.line_total,
       ])
 
-      // Decrement stock
-      await client.query(
-        'UPDATE product_variants SET stock_qty = stock_qty - $1 WHERE id = $2',
-        [item.quantity, item.variant_id]
-      )
+      // Decrement stock — skip virtual products (Box Office has no DB variant row)
+      if (!item.isVirtual) {
+        await client.query(
+          'UPDATE product_variants SET stock_qty = stock_qty - $1 WHERE id = $2',
+          [item.quantity, item.variant_id]
+        )
+      }
     }
 
     // Log creation event
