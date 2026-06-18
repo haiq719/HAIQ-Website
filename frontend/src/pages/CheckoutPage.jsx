@@ -528,8 +528,11 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      {lbl('First Name',true)}
+                      {lbl('First Name',true,'checkout-first-name')}
                       <input
+                        id="checkout-first-name"
+                        name="first_name"
+                        autoComplete="given-name"
                         className={inputCls}
                         style={{
                           ...inputSty,
@@ -540,8 +543,11 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div>
-                      {lbl('Last Name',true)}
+                      {lbl('Last Name',true,'checkout-last-name')}
                       <input
+                        id="checkout-last-name"
+                        name="last_name"
+                        autoComplete="family-name"
                         className={inputCls}
                         style={{
                           ...inputSty,
@@ -553,9 +559,12 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div>
-                    {lbl('Email',true)}
+                    {lbl('Email',true,'checkout-email')}
                     <input
+                      id="checkout-email"
+                      name="email"
                       type="email"
+                      autoComplete="email"
                       className={inputCls}
                       style={{
                         ...inputSty,
@@ -566,9 +575,12 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    {lbl('Phone',true)}
+                    {lbl('Phone',true,'checkout-phone')}
                     <input
+                      id="checkout-phone"
+                      name="phone"
                       type="tel"
+                      autoComplete="tel"
                       className={inputCls}
                       style={{
                         ...inputSty,
@@ -670,8 +682,11 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <div>
-                    {lbl('Specific Address', true)}
+                    {lbl('Specific Address', true, 'checkout-address')}
                     <textarea
+                      id="checkout-address"
+                      name="delivery_address"
+                      autoComplete="street-address"
                       rows={2}
                       className={`${inputCls} resize-none`}
                       style={{
@@ -683,7 +698,19 @@ export default function CheckoutPage() {
                       placeholder="House number, landmark, building name..."
                     />
                   </div>
-                  <div>{lbl('Delivery Note')}<input className={inputCls} style={inputSty} value={details.delivery_note} onChange={upd('delivery_note')} placeholder="Leave at gate / call on arrival"/></div>
+                  <div>
+                    {lbl('Delivery Note', false, 'checkout-note')}
+                    <input
+                      id="checkout-note"
+                      name="delivery_note"
+                      autoComplete="off"
+                      className={inputCls}
+                      style={inputSty}
+                      value={details.delivery_note}
+                      onChange={upd('delivery_note')}
+                      placeholder="Leave at gate / call on arrival"
+                    />
+                  </div>
                 </div>
                 {validationErrors.length > 0 && (
                   <div className="mb-4 p-4 rounded" style={{ background: 'rgba(248,113,113,0.15)', border: '2px solid #f87171' }}>
