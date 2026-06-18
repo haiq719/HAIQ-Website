@@ -264,6 +264,33 @@ async function sendLoyaltyDispatched({ email, name, deliveryAddress }) {
   });
 }
 
+// ── Inquiry reply (admin → customer via email) ─────────────────────────────────
+async function sendInquiryReply({ toEmail, toName, subject, originalMessage, replyBody }) {
+  const displayName = toName || 'there';
+  const replySubject = subject ? `Re: ${subject}` : 'Reply from HAIQ';
+  return send({
+    to:      toEmail,
+    subject: replySubject,
+    html:    baseLayout(`
+      ${heading('We\'ve Heard You.')}
+      ${para(`Hi ${displayName},`)}
+      ${para(replyBody.replace(/\n/g, '<br>'))}
+      <table cellpadding="0" cellspacing="0" style="margin:28px 0 0;border:1px solid ${BRAND.border};width:100%;">
+        <tr>
+          <td style="padding:8px 16px;border-bottom:1px solid ${BRAND.border};background:${BRAND.surface || '#2A1200'};">
+            <span style="color:${BRAND.muted};font-size:10px;letter-spacing:0.2em;text-transform:uppercase;font-family:'Arial',sans-serif;">Your Original Message</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 16px;">
+            <p style="margin:0;color:${BRAND.muted};font-family:'Arial',sans-serif;font-size:13px;line-height:1.6;font-style:italic;">${originalMessage.replace(/\n/g, '<br>')}</p>
+          </td>
+        </tr>
+      </table>
+    `),
+  });
+}
+
 module.exports = {
   send,
   sendWelcome,
@@ -276,4 +303,5 @@ module.exports = {
   sendLoyaltyApproved,
   sendLoyaltyRejected,
   sendLoyaltyDispatched,
+  sendInquiryReply,
 };
