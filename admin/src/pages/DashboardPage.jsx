@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import adminApi from '../services/adminApi'
 import Crown from '../components/shared/Crown'
+import { useEntrance, useCountUp } from '../lib/anim'
 
-function StatCard({ label, value, sub, accent = '#E8C88A', loading, to }) {
+function StatCard({ label, value, prefix = '', sub, accent = '#E8C88A', loading, to }) {
   const navigate = useNavigate()
-  const content = (
+  const display = useCountUp(loading ? 0 : value)
+  return (
     <div
       className="p-5 relative overflow-hidden transition-all duration-200"
       style={{ background: '#2A1200', border: '1px solid rgba(61,32,0,0.8)', cursor: to ? 'pointer' : 'default' }}
@@ -19,13 +21,14 @@ function StatCard({ label, value, sub, accent = '#E8C88A', loading, to }) {
       <p className="text-[10px] font-semibold text-muted uppercase tracking-[0.25em] mb-2">{label}</p>
       {loading
         ? <div className="h-8 w-24 skeleton rounded mb-1" style={{ background: '#3D2000' }} />
-        : <p className="font-serif font-bold text-3xl mb-1 leading-none" style={{ color: accent }}>{value}</p>
+        : <p className="font-serif font-bold text-3xl mb-1 leading-none tabular-nums" style={{ color: accent }}>
+            {prefix}{Math.round(display).toLocaleString()}
+          </p>
       }
       {sub && <p className="text-muted text-xs">{sub}</p>}
       {to && <p className="text-[10px] mt-2 opacity-50" style={{ color: accent }}>View →</p>}
     </div>
   )
-  return content
 }
 
 function SparkBars({ data }) {
@@ -85,7 +88,7 @@ export default function DashboardPage() {
       adminApi.get('/admin/orders?limit=6').catch(() => ({ data: { orders: [] } })),
       adminApi.get('/admin/loyalty?status=pending').catch(() => ({ data: { cards: [] } })),
     ]).then(([s, tc, ro, lc]) => {
-      setSummary(s.data)
+      setSummary(s.data.summary || s.data || {})
       setTopCustomers(tc.data.customers || [])
       setRecentOrders(ro.data.orders || [])
       setPendingCards(lc.data.cards || [])
@@ -93,23 +96,24 @@ export default function DashboardPage() {
   }, [])
 
   const sparkData = summary?.revenue_7d || []
+  const containerRef = useEntrance([loading], { delay: 80 })
 
   return (
-    <div className="space-y-5 max-w-[1400px]">
+    <div ref={containerRef} className="space-y-5 max-w-[1400px]">
 
       {/* Stat cards — all clickable */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <StatCard label="Total Revenue" loading={loading}
-          value={loading ? '—' : `UGX ${Number(summary?.total_revenue||0).toLocaleString()}`}
+          value={Number(summary?.total_revenue || 0)} prefix="UGX "
           sub="All time" accent="#E8C88A" to="/orders" />
         <StatCard label="Orders Today" loading={loading}
-          value={loading ? '—' : (summary?.orders_today ?? 0)}
+          value={Number(summary?.orders_today || 0)}
           sub="New orders" accent="#B8752A" to="/orders" />
         <StatCard label="Customers" loading={loading}
-          value={loading ? '—' : Number(summary?.total_customers||0).toLocaleString()}
+          value={Number(summary?.total_customers || 0)}
           sub="Accounts" accent="#D4A574" />
         <StatCard label="Newsletter" loading={loading}
-          value={loading ? '—' : Number(summary?.newsletter_count||0).toLocaleString()}
+          value={Number(summary?.newsletter_count || 0)}
           sub="Subscribers" accent="#8C7355" to="/newsletter" />
       </div>
 

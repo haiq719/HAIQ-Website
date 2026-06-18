@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { animate } from 'animejs'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 import Crown from '../shared/Crown'
 import {
@@ -50,6 +51,15 @@ export default function AdminLayout({ children }) {
   const title = Object.entries(PAGE_TITLES).find(([p]) =>
     location.pathname === p || location.pathname.startsWith(p + '/')
   )?.[1] ?? 'Admin'
+
+  // Subtle page transition on every navigation (anime.js)
+  const mainRef = useRef(null)
+  useEffect(() => {
+    const el = mainRef.current
+    if (!el) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    animate(el, { opacity: [0, 1], translateY: [10, 0], duration: 380, ease: 'out(3)' })
+  }, [location.pathname])
 
   const handleLogout = async () => {
     await logout()
@@ -133,7 +143,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         {/* Page content — scrollable */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main ref={mainRef} className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
 

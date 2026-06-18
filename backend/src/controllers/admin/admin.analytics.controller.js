@@ -4,7 +4,7 @@ const { query } = require('../../config/db');
 // ── Summary card stats ────────────────────────────────────────────────────────
 const summary = async (req, res, next) => {
   try {
-    const [ordersRes, revenueRes, customersRes, pendingRes] = await Promise.all([
+    const [ordersRes, revenueRes, customersRes, pendingRes, todayRes, newsletterRes] = await Promise.all([
       query(`SELECT COUNT(*) AS total FROM orders`),
       query(`
         SELECT
@@ -16,6 +16,11 @@ const summary = async (req, res, next) => {
       `),
       query(`SELECT COUNT(*) AS total FROM users WHERE is_guest = false`),
       query(`SELECT COUNT(*) AS total FROM orders WHERE status NOT IN ('delivered','cancelled') AND payment_status = 'paid'`),
+      query(`
+        SELECT COUNT(*) AS total FROM orders
+        WHERE DATE(created_at AT TIME ZONE 'Africa/Kampala') = DATE(NOW() AT TIME ZONE 'Africa/Kampala')
+      `),
+      query(`SELECT COUNT(*) AS total FROM newsletter_subscribers WHERE is_active = true`),
     ]);
 
     // This week vs last week revenue
@@ -33,6 +38,30 @@ const summary = async (req, res, next) => {
         AND created_at <  date_trunc('week', NOW())
     `);
 
+    // Last 7 days revenue, one row per day (for dashboard sparkline)
+    const last7 = await query(`
+      SELECT
+        d::date AS day,
+        COALESCE(SUM(o.total), 0) AS total
+      FROM generate_series(
+        (NOW() AT TIME ZONE 'Africa/Kampala')::date - interval '6 days',
+        (NOW() AT TIME ZONE 'Africa/Kampala')::date,
+        interval '1 day'
+      ) AS d
+      LEFT JOIN orders o
+        ON DATE(o.created_at AT TIME ZONE 'Africa/Kampala') = d::date
+        AND o.payment_status = 'paid'
+      GROUP BY d::date
+      ORDER BY d::date ASC
+    `);
+
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const revenue7d = last7.rows.map(r => ({
+      label: dayLabels[new Date(r.day).getDay()],
+      total: parseFloat(r.total),
+    }));
+    const revenue7dTotal = revenue7d.reduce((sum, d) => sum + d.total, 0);
+
     const thisRevenue = parseFloat(thisWeek.rows[0].amount);
     const lastRevenue = parseFloat(lastWeek.rows[0].amount);
     const weeklyChange = lastRevenue === 0
@@ -48,9 +77,13 @@ const summary = async (req, res, next) => {
         delivery_revenue: parseFloat(revenueRes.rows[0].delivery_total),
         total_customers:  parseInt(customersRes.rows[0].total),
         active_orders:    parseInt(pendingRes.rows[0].total),
+        orders_today:     parseInt(todayRes.rows[0].total),
+        newsletter_count: parseInt(newsletterRes.rows[0].total),
         revenue_this_week: thisRevenue,
         revenue_last_week: lastRevenue,
         weekly_change_pct: weeklyChange,
+        revenue_7d:        revenue7d,
+        revenue_7d_total:  revenue7dTotal,
       },
     });
   } catch (err) { next(err); }
@@ -83,15 +116,19 @@ const topProducts = async (req, res, next) => {
     const { rows } = await query(`
       SELECT
         p.id, p.name, p.slug,
-        COALESCE(pi.url, '') AS image_url,
+        COALESCE((
+          SELECT pi.url FROM product_images pi
+          WHERE pi.product_id = p.id
+          ORDER BY pi.sort_order ASC
+          LIMIT 1
+        ), '') AS image_url,
         SUM(oi.quantity)   AS units_sold,
         SUM(oi.line_total) AS revenue
       FROM order_items oi
       JOIN products p ON p.id = oi.product_id
-      LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.sort_order = 0
       JOIN orders   o ON o.id = oi.order_id
       WHERE o.payment_status = 'paid'
-      GROUP BY p.id, p.name, p.slug, pi.url
+      GROUP BY p.id, p.name, p.slug
       ORDER BY units_sold DESC
       LIMIT 6
     `);

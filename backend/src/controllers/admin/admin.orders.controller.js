@@ -126,11 +126,16 @@ async function updateStatus(req, res, next) {
       [status, id]
     );
 
-    // COD auto-payment
+    // COD auto-payment — mark the order paid AND reconcile the payment record
     if (order.payment_method === 'cash_on_delivery' && status === 'delivered') {
       await client.query(
         'UPDATE orders SET payment_status = $1, updated_at = NOW() WHERE id = $2',
         ['paid', id]
+      );
+      await client.query(
+        `UPDATE payments SET status = 'successful', updated_at = NOW()
+         WHERE order_id = $1 AND status NOT IN ('refunded','cancelled')`,
+        [id]
       );
     }
 

@@ -1,13 +1,90 @@
 // AnalyticsPage.jsx
 import { useEffect, useState } from 'react'
 import adminApi from '../services/adminApi'
+import { useEntrance, useCountUp } from '../lib/anim'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend, AreaChart, Area, Sector,
+  BarChart, Bar, Legend, AreaChart, Area,
 } from 'recharts'
 import {
   BarChart3, MapPin, Gift, Users, Trophy, Package, TrendingUp, AlertCircle, CalendarDays,
 } from 'lucide-react'
+
+// Local product images (mirrors the storefront) — fallback when the DB has no image URL
+const LOCAL_PRODUCT_IMG = {
+  'venom':               '/images/products/venom.jpg',
+  'coconut':             '/images/products/coconut.jpg',
+  'crimson-sin':         '/images/products/crimson_sin.jpg',
+  'campfire-after-dark': '/images/products/campfire.jpg',
+  'blackout':            '/images/products/blackout.jpg',
+}
+
+// Product thumbnail with a graceful source-fallback chain: DB url → local map → placeholder
+function ProductThumb({ product }) {
+  const sources = [product.image_url, LOCAL_PRODUCT_IMG[product.slug]].filter(Boolean)
+  const [idx, setIdx] = useState(0)
+  const src = sources[idx]
+
+  if (!src) {
+    return (
+      <div className="w-full h-full flex items-center justify-center"
+        style={{ background: 'rgba(140,115,85,0.08)' }}>
+        <Package size={30} strokeWidth={1.5} style={{ color: 'rgba(140,115,85,0.5)' }} />
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={product.name}
+      className="w-full h-full object-cover"
+      loading="lazy"
+      onError={() => setIdx(i => i + 1)}
+    />
+  )
+}
+
+// Horizontal zone-distribution bars — far more legible than a cramped pie legend
+const ZONE_COLORS = ['#E8C88A', '#D4A574', '#B8752A', '#A8632A', '#8C7355', '#7A3B1E']
+function ZoneBars({ zones, fmt }) {
+  const [grown, setGrown] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setGrown(true), 60)
+    return () => clearTimeout(t)
+  }, [zones])
+
+  const max = Math.max(...zones.map(z => z.order_count), 1)
+  const totalOrders = zones.reduce((s, z) => s + z.order_count, 0)
+
+  return (
+    <div className="space-y-3.5">
+      {zones.map((z, i) => {
+        const pct   = grown ? (z.order_count / max) * 100 : 0
+        const share = totalOrders > 0 ? Math.round((z.order_count / totalOrders) * 100) : 0
+        const color = ZONE_COLORS[i % ZONE_COLORS.length]
+        return (
+          <div key={z.zone_name}>
+            <div className="flex items-baseline justify-between mb-1.5 gap-3">
+              <span className="text-xs font-medium truncate" style={{ color: '#F2EAD8' }}>{z.zone_name}</span>
+              <span className="text-[10px] whitespace-nowrap tabular-nums" style={{ color: '#8C7355' }}>
+                {z.order_count} order{z.order_count !== 1 ? 's' : ''} · {share}% · UGX {fmt(z.delivery_revenue)}
+              </span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: '#1A0A00' }}>
+              <div className="h-full rounded-full"
+                style={{
+                  width: `${pct}%`,
+                  background: color,
+                  transition: 'width 900ms cubic-bezier(0.2,0.8,0.2,1)',
+                  transitionDelay: `${i * 60}ms`,
+                }} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 const TIER_COLOR = { Crown: '#E8C88A', Reserve: '#B8752A', Classic: '#8C7355' }
 const PIE_COLORS = ['#B8752A', '#D4A574', '#8C7355', '#7A3B1E']
@@ -68,13 +145,14 @@ function IconLabel({ icon, text }) {
 
 function KPICard({ label, value, change, icon }) {
   const isPositive = change > 0
+  const display = useCountUp(Number(value) || 0)
   return (
     <div className="admin-card p-4">
       <div className="flex items-start justify-between mb-3">
         <p className="text-light/50 text-[10px] font-semibold uppercase tracking-widest">{label}</p>
         <p className="text-xl">{icon}</p>
       </div>
-      <p className="font-serif font-bold text-light text-2xl mb-2">{fmt(value)}</p>
+      <p className="font-serif font-bold text-light text-2xl mb-2 tabular-nums">{fmt(Math.round(display))}</p>
       {change !== null && (
         <p className={`text-xs font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
           {isPositive ? '↑' : '↓'} {Math.abs(change)}% vs last week
@@ -99,41 +177,6 @@ export default function AnalyticsPage() {
   const [expandedAccordion,    setExpandedAccordion]    = useState(false)
   const [isMobile,             setIsMobile]             = useState(window.innerWidth < 768)
   const [heatmapHover,         setHeatmapHover]         = useState(null)
-
-  // Handle product image loading with retry limit (max 3 attempts)
-  const handleProductImageError = (e, productName) => {
-    const img = e.target
-    const currentRetries = parseInt(img.dataset.retries || '0')
-
-    console.log(`Image load failed for ${productName}. Attempt ${currentRetries + 1}/3`)
-
-    if (currentRetries < 3) {
-      // Increment retry counter and retry with fallback
-      img.dataset.retries = currentRetries + 1
-      img.src = '/default-product.png'
-    } else {
-      // Max retries reached - hide image and show placeholder
-      img.style.display = 'none'
-      const parent = img.parentElement
-
-      // Create placeholder div with Package icon
-      const placeholder = document.createElement('div')
-      placeholder.className = 'w-full h-32 rounded mb-3 flex items-center justify-center'
-      placeholder.style.background = 'rgba(140, 115, 85, 0.1)'
-      placeholder.style.border = '1px dashed rgba(140, 115, 85, 0.3)'
-
-      const iconDiv = document.createElement('div')
-      iconDiv.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8C7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-      </svg>`
-
-      placeholder.appendChild(iconDiv)
-      parent.insertBefore(placeholder, img.nextSibling)
-    }
-  }
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -356,16 +399,18 @@ export default function AnalyticsPage() {
     return { days, hours, grid }
   })()
 
+  const containerRef = useEntrance([loading], { delay: 70, y: 22 })
+
   if (loading) return (
     <div className="space-y-6">
       {Array(3).fill(null).map((_, i) => (
-        <div key={i} className="h-48 skeleton-dark rounded-lg" />
+        <div key={i} className="h-48 skeleton rounded-lg" style={{ background: '#3D2000' }} />
       ))}
     </div>
   )
 
   return (
-    <div className="space-y-10">
+    <div ref={containerRef} className="space-y-10">
 
       {/* Page header */}
       <div>
@@ -523,37 +568,11 @@ export default function AnalyticsPage() {
         {/* Zone Distribution */}
         <div className="admin-card">
           <SectionHeader label="By Location" title="Zone Distribution" />
-          <IconLabel icon={<MapPin size={13} strokeWidth={1.5}/>} text="Zones with active orders" />
+          <IconLabel icon={<MapPin size={13} strokeWidth={1.5}/>} text="Orders & delivery revenue by zone" />
           {zones.length === 0 ? (
             <p className="text-light/30 text-sm py-4">No zone data yet.</p>
           ) : (
-            <ResponsiveContainer width="100%" height={isMobile ? 200 : 220}>
-              <PieChart>
-                <Pie data={zones} dataKey="order_count" nameKey="zone_name"
-                  cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={2}
-                  activeShape={(props) => {
-                    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props
-                    return (
-                      <Sector
-                        cx={cx} cy={cy}
-                        innerRadius={innerRadius} outerRadius={outerRadius + 3}
-                        startAngle={startAngle} endAngle={endAngle}
-                        fill={fill}
-                        stroke="rgba(255,255,255,0.15)"
-                        strokeWidth={1}
-                      />
-                    )
-                  }}>
-                  {zones.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Legend
-                  formatter={(v) => <span style={{ color: '#F2EAD8', fontSize: 10 }}>{v}</span>}
-                />
-                <Tooltip content={zoneTooltip} wrapperStyle={TOOLTIP_STYLE} animationDuration={120} animationEasing="ease-out" />
-              </PieChart>
-            </ResponsiveContainer>
+            <ZoneBars zones={zones} fmt={fmt} />
           )}
         </div>
 
@@ -734,17 +753,7 @@ export default function AnalyticsPage() {
               <div key={p.id} className="p-4 rounded border" style={{ background: '#2A1200', border: '1px solid #3D2000' }}>
                 {/* Product image */}
                 <div className="mb-3 h-32 bg-black/30 rounded overflow-hidden flex items-center justify-center">
-                  <img
-                    src={p.image_url || '/default-product.png'}
-                    alt={p.name}
-                    className="w-full h-full object-cover"
-                    data-retries="0"
-                    onError={(e) => handleProductImageError(e, p.name)}
-                    onLoad={(e) => {
-                      // Reset retry counter on successful load
-                      e.target.dataset.retries = '0'
-                    }}
-                  />
+                  <ProductThumb product={p} />
                 </div>
 
                 {/* Best Seller Badge */}
