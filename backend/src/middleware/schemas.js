@@ -98,7 +98,7 @@ const createOrderSchema = z.object({
     variant_id: safeUUID(),
     quantity: z.number().int().min(1).max(50),
   })).min(1).max(20),
-  payment_method: z.enum(['mtn_momo', 'airtel', 'cash_on_delivery']),
+  payment_method: z.enum(['cash_on_delivery']),
   consent_given: z.literal(true, {
     errorMap: () => ({ message: 'You must accept the terms to proceed' }),
   }),

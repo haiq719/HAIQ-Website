@@ -413,18 +413,17 @@ export default function CheckoutPage() {
 
       const { data } = await api.post('/orders', body, { headers })
 
-      // For mobile money, redirect to payment verification page
-      if (payMethod === 'mtn_momo' || payMethod === 'airtel') {
-        navigate(`/payment-confirmation/${data.tracking_token || data.order?.tracking_token}`, {
-          state: { paymentMethod: payMethod, orderId: data.id || data.order?.id }
-        })
-      } else {
-        // For COD, go directly to order confirmation
-        navigate(`/order-confirmation/${data.tracking_token || data.order?.tracking_token}`)
-      }
+      navigate(`/order-confirmation/${data.tracking_token || data.order?.tracking_token}`)
       clearCart()
     } catch (err) {
-      setSubmitError(err.response?.data?.error || err.response?.data?.message || 'Something went wrong. Please try again.')
+      const data = err.response?.data
+      const details = data?.details
+      if (details?.length) {
+        const msgs = details.map(d => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' • ')
+        setSubmitError(`Validation failed — ${msgs}`)
+      } else {
+        setSubmitError(data?.error || data?.message || 'Something went wrong. Please try again.')
+      }
     } finally { setSubmitting(false) }
   }
 
@@ -728,23 +727,8 @@ export default function CheckoutPage() {
                 })()}
 
                 <div className="space-y-4 mb-6">
-                  <PayBtn method="mtn_momo" selected={payMethod === 'mtn_momo'} onSelect={setPayMethod} />
-                  <PayBtn method="airtel" selected={payMethod === 'airtel'} onSelect={setPayMethod} />
                   <PayBtn method="cash_on_delivery" selected={payMethod === 'cash_on_delivery'} onSelect={setPayMethod} />
                 </div>
-
-                {(payMethod === 'mtn_momo' || payMethod === 'airtel') && (
-                  <div className="mb-6 p-4" style={{ background: 'rgba(184,117,42,0.1)', border: '1px solid rgba(184,117,42,0.3)', borderRadius: '8px' }}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: '#B8752A' }}>📲 Next Steps</p>
-                    <ol className="text-xs space-y-2" style={{ color: '#8C7355', listStyleType: 'decimal', marginLeft: '20px' }}>
-                      <li>Click "Confirm Order" below</li>
-                      <li>Dial <strong style={{ color: '#B8752A', fontFamily: 'monospace' }}>{PAYMENT_METHODS[payMethod].ussd}</strong> from your phone</li>
-                      <li>Enter the merchant code: <strong style={{ color: '#B8752A', fontFamily: 'monospace' }}>{PAYMENT_METHODS[payMethod].merchantCode}</strong></li>
-                      <li>Follow the prompts to complete payment</li>
-                      <li>Your order will be confirmed once payment is verified</li>
-                    </ol>
-                  </div>
-                )}
 
                 <div className="flex gap-3">
                   <Button onClick={() => setStep(2)} variant="secondary" className="flex-1" size="md">
