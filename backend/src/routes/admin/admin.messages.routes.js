@@ -1,6 +1,7 @@
 // src/routes/admin/admin.messages.routes.js
 'use strict';
 const router    = require('express').Router();
+const { query } = require('../../config/db');
 const { optionalAdminAuth, requireStaff } = require('../../middleware/adminAuth');
 const messagesCtrl = require('../../controllers/admin/admin.messages.controller');
 const { validate } = require('../../middleware/validate');
