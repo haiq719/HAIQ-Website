@@ -133,15 +133,15 @@ export default function ContactPage() {
     setStatus('loading')
     try {
       await api.post('/messages', {
-        first_name: form.name.split(' ')[0] || form.name,
-        last_name:  form.name.split(' ').slice(1).join(' ') || '',
-        email:      form.email,
-        subject:    form.subject,
-        body:       form.message,
+        name:    form.name.trim(),
+        email:   form.email.trim(),
+        subject: form.subject.trim(),
+        body:    form.message.trim(),
       })
       setStatus('success')
       setForm({ name: '', email: '', subject: '', message: '' })
-    } catch {
+    } catch (err) {
+      console.error('Message send error:', err.response?.data || err.message)
       setStatus('error')
     }
   }
