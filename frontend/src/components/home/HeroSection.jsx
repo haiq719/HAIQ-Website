@@ -68,7 +68,7 @@ export default function HeroSection() {
         </div>
 
         {/* Centre — headline + CTAs */}
-        <div className="flex-1 flex items-center px-8 md:px-20">
+        <div className="flex-1 flex items-center px-8 md:px-20 md:pb-32">
           <div className="max-w-3xl">
 
             <div style={show(60)} className="mb-5">
@@ -151,9 +151,9 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Spec strip — anchored above the thin bottom rule, fully inside dark area */}
+        {/* Spec strip — absolute bottom so it never compresses the center content */}
         <div
-          className="hidden md:block px-20 pb-10"
+          className="hidden md:block absolute bottom-0 left-0 right-0 px-20 pb-10"
           style={show(400)}
         >
           {/* Thin separator above spec strip */}

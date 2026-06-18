@@ -10,7 +10,7 @@
  * - 3600s (1 hour): Block order submission
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://haiq-api-9im4.onrender.com'
 
 // Thresholds (match backend constants exactly)
 export const CLOCK_SKEW_TOLERANCE_SECONDS = 300 // Show warning at 5 min

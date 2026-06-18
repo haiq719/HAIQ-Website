@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -39,7 +39,7 @@ export default function Navbar() {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     updateSpacer()
     window.addEventListener('resize', updateSpacer)
     return () => window.removeEventListener('resize', updateSpacer)
