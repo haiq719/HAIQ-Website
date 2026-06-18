@@ -17,7 +17,7 @@ const TIMEZONE_OFFSET_HOURS = 3 // Africa/Kampala UTC+3
  * Returns server's authoritative time for client-side validation
  * Should be a HEAD request to minimize bandwidth
  */
-export const getServerTime = (req, res) => {
+const getServerTime = (req, res) => {
   const serverTime = new Date()
 
   // Return server time in UTC (ISO 8601 format)
@@ -52,7 +52,7 @@ export const getServerTime = (req, res) => {
  * - isValid: {boolean} true if skew <= tolerance
  * - isCritical: {boolean} true if skew > critical threshold
  */
-export const validateTimeSync = (req, res, next) => {
+const validateTimeSync = (req, res, next) => {
   const serverTime = new Date()
   const clientTimeHeader = req.headers['x-client-time']
 
@@ -140,7 +140,7 @@ export const validateTimeSync = (req, res, next) => {
  *
  * Used for POST /v1/orders and similar critical operations
  */
-export const enforceTimeValidation = (req, res, next) => {
+const enforceTimeValidation = (req, res, next) => {
   // Skip if no time validation data (endpoint called without time header)
   if (!req.timeValidation) {
     return next()
@@ -180,7 +180,7 @@ export const enforceTimeValidation = (req, res, next) => {
  * Middleware: Log all time validation attempts (for security audits)
  * Optional: Enable for debugging or security monitoring
  */
-export const logTimeValidation = (req, res, next) => {
+const logTimeValidation = (req, res, next) => {
   if (!req.timeValidation) {
     return next()
   }
