@@ -175,9 +175,9 @@ export default function Footer() {
                 className="text-[10px] tracking-wider hover:opacity-80 transition" style={{ color: 'rgba(242,234,216,0.2)', textDecoration: 'none' }}>
                 @haiq_ug
               </a>
-              <a href="https://www.facebook.com/Haiqafrica" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.tiktok.com/@haiq_africa" target="_blank" rel="noopener noreferrer"
                 className="text-[10px] tracking-wider hover:opacity-80 transition" style={{ color: 'rgba(242,234,216,0.2)', textDecoration: 'none' }}>
-                Haiqafrica
+                @haiq_africa
               </a>
             </div>
           </div>

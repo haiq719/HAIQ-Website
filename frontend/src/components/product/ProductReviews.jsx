@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../shared/Button'
-import { Star } from 'lucide-react'
+import { Star, CheckCircle } from 'lucide-react'
 
 // ── Star Rating ───────────────────────────────────────────────────────────────
 function StarRating({ value, onChange, readonly = false, size = 'md' }) {
@@ -169,8 +169,9 @@ export default function ProductReviews({ productSlug }) {
 
       {/* Success */}
       {status === 'success' && (
-        <div className="mt-4 px-4 py-3 text-sm" style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', color: '#4ade80' }}>
-          ✓ Your review has been submitted and is pending approval.
+        <div className="mt-4 px-4 py-3 text-sm flex items-center gap-2" style={{ background: 'rgba(184,117,42,0.08)', border: '1px solid rgba(184,117,42,0.25)', color: '#E8C88A' }}>
+          <CheckCircle size={15} style={{ color: '#B8752A', flexShrink: 0 }} />
+          Your review has been submitted and is pending approval.
         </div>
       )}
 

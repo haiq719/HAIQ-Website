@@ -62,7 +62,7 @@ router.patch('/:id', requireStaff, async (req, res, next) => {
 
     const { rows: [review] } = await query(`
       UPDATE product_reviews
-      SET status = $1, updated_at = NOW()
+      SET status = $1
       WHERE id = $2
       RETURNING id, product_id, status
     `, [status, req.params.id]);

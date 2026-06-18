@@ -1,28 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
-import { ClipboardList, ChefHat, Flame, Package, Bike, Sparkles, XCircle, AlertTriangle } from 'lucide-react'
+import { ClipboardList, Bike, Sparkles, XCircle, AlertTriangle, Phone } from 'lucide-react'
 
 const STATUS_CONFIG = {
-  pending:         { label: 'Order Received',  icon: ClipboardList, step: 1, desc: 'We have your order and are getting started.' },
-  freshly_kneaded: { label: 'Freshly Kneaded', icon: ChefHat,       step: 2, desc: 'Our bakers are working on your cookies right now.' },
-  ovenbound:       { label: 'In the Oven',     icon: Flame,         step: 3, desc: 'Your cookies are baking. The good part.' },
-  on_the_cart:     { label: 'Packed & Ready',  icon: Package,       step: 4, desc: 'Packaged and waiting for pickup.' },
-  en_route:        { label: 'En Route',        icon: Bike,          step: 5, desc: 'On the way to you. Stay close.' },
-  delivered:       { label: 'Delivered.',      icon: Sparkles,      step: 6, desc: 'Enjoy every bite.' },
-  cancelled:       { label: 'Cancelled',       icon: XCircle,       step: 0, desc: 'This order was cancelled.' },
+  pending:   { label: 'Order Received', icon: ClipboardList, step: 1, desc: 'We have your order and are getting it ready.' },
+  en_route:  { label: 'En Route',       icon: Bike,          step: 2, desc: 'On the way to you. Stay close.' },
+  delivered: { label: 'Delivered.',     icon: Sparkles,      step: 3, desc: 'Enjoy every bite.' },
+  cancelled: { label: 'Cancelled',      icon: XCircle,       step: 0, desc: 'This order was cancelled.' },
 }
 
-const ACTIVE_STATUSES  = ['pending','freshly_kneaded','ovenbound','on_the_cart','en_route']
-const PAST_STATUSES    = ['delivered','cancelled']
+const ACTIVE_STATUSES = ['pending', 'en_route']
+const PAST_STATUSES   = ['delivered', 'cancelled']
 const containsHtml = (value = '') => /<[^>]*>/.test(value) || /javascript:/i.test(value)
 
 // ── Progress bar ──────────────────────────────────────────────────────────────
 function OrderProgress({ status }) {
-  const steps = ['pending','freshly_kneaded','ovenbound','on_the_cart','en_route','delivered']
+  const steps   = ['pending', 'en_route', 'delivered']
   const current = STATUS_CONFIG[status]
   if (!current || status === 'cancelled') return (
     <div className="px-4 py-3 text-center text-sm" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
@@ -39,10 +36,6 @@ function OrderProgress({ status }) {
           const now  = status === s
           return (
             <div key={s} className="flex flex-col items-center flex-1">
-              {/* Connector */}
-              {i > 0 && (
-                <div className="absolute" style={{ display: 'none' }} />
-              )}
               <div
                 className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all"
                 style={{
@@ -68,7 +61,7 @@ function OrderProgress({ status }) {
           <div
             className="h-full transition-all duration-700"
             style={{
-              width:      `${Math.max(0, ((current.step - 1) / 5) * 100)}%`,
+              width:      `${Math.max(0, ((current.step - 1) / 2) * 100)}%`,
               background: '#B8752A',
             }}
           />
@@ -138,34 +131,10 @@ function CancelModal({ order, onCancel, onClose }) {
 
 // ── Order detail view ─────────────────────────────────────────────────────────
 function OrderDetail({ order, onBack, onCancelled }) {
-  const [messages,  setMessages]  = useState([])
-  const [msgBody,   setMsgBody]   = useState('')
-  const [sending,   setSending]   = useState(false)
-  const [msgError,  setMsgError]  = useState(null)
-  const [showCancel,setShowCancel]= useState(false)
+  const [showCancel, setShowCancel] = useState(false)
 
-  const canCancel = ACTIVE_STATUSES.includes(order.status) && order.status !== 'en_route'
+  const canCancel  = order.status === 'pending'
   const isDelivered = order.status === 'delivered'
-
-  useEffect(() => {
-    api.get(`/messages/${order.id}`)
-      .then(res => setMessages(res.data.messages || []))
-      .catch(() => {})
-  }, [order.id])
-
-  const sendMessage = async () => {
-    if (!msgBody.trim() || containsHtml(msgBody)) return
-    setSending(true)
-    setMsgError(null)
-    try {
-      await api.post('/messages', { order_id: order.id, body: msgBody.trim() })
-      setMsgBody('')
-      const res = await api.get(`/messages/${order.id}`)
-      setMessages(res.data.messages || [])
-    } catch (err) {
-      setMsgError(err.message || 'Failed to send message. Try again.')
-    } finally { setSending(false) }
-  }
 
   return (
     <div>
@@ -212,52 +181,23 @@ function OrderDetail({ order, onBack, onCancelled }) {
         </div>
       )}
 
-      {/* Message thread */}
+      {/* Contact */}
       {!isDelivered && (
         <div className="p-5 mb-5" style={{ background: '#2A1200', border: '1px solid rgba(184,117,42,0.2)' }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: '#8C7355' }}>
-            Message HAIQ About This Order
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-2" style={{ color: '#8C7355' }}>
+            Questions About Your Order?
           </p>
-          <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-            {messages.map(m => (
-              <div key={m.id} className={`flex ${m.sender_type === 'admin' ? 'justify-start' : 'justify-end'}`}>
-                <div
-                  className="px-3 py-2 text-xs max-w-[80%] leading-relaxed"
-                  style={{
-                    background: m.sender_type === 'admin' ? 'rgba(184,117,42,0.15)' : '#1A0A00',
-                    border:     `1px solid ${m.sender_type === 'admin' ? 'rgba(184,117,42,0.3)' : 'rgba(61,32,0,0.8)'}`,
-                    color:      '#F2EAD8',
-                  }}
-                >
-                  {m.body}
-                </div>
-              </div>
-            ))}
-            {messages.length === 0 && (
-              <p className="text-xs text-center py-3" style={{ color: '#8C7355' }}>No messages yet.</p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={msgBody}
-              onChange={e => setMsgBody(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && sendMessage()}
-              placeholder="Ask us about your order…"
-              className="flex-1 px-3 py-2.5 text-sm focus:outline-none"
-              style={{ background: '#1A0A00', border: '1px solid #3D2000', color: '#F2EAD8' }}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={sending || !msgBody.trim()}
-              className="px-4 py-2 font-bold text-[11px] tracking-wider uppercase disabled:opacity-40"
-              style={{ background: '#B8752A', color: '#1A0A00' }}
-            >
-              {sending ? '…' : 'Send'}
-            </button>
-          </div>
-          {msgError && (
-            <p className="text-xs mt-2" style={{ color: '#f87171' }}>{msgError}</p>
-          )}
+          <p className="text-sm mb-3" style={{ color: 'rgba(242,234,216,0.5)' }}>
+            Give us a call and we'll sort it out right away.
+          </p>
+          <a
+            href="tel:+256753996786"
+            className="inline-flex items-center gap-2 font-bold text-sm tracking-wide hover:opacity-75 transition"
+            style={{ color: '#B8752A' }}
+          >
+            <Phone size={14} />
+            +256 753 996 786
+          </a>
         </div>
       )}
 
@@ -311,7 +251,6 @@ export default function TrackOrderPage() {
     if (token && orders.length > 0) {
       const found = orders.find(o => o.tracking_token === token)
       if (found) { setSelected(found); return }
-      // Try fetching by token directly if not in my orders
       api.get(`/orders/track/${token}`)
         .then(res => { if (res.data.order) setSelected(res.data.order) })
         .catch(() => {})
@@ -389,7 +328,9 @@ export default function TrackOrderPage() {
             {/* Order list */}
             {error && !loading ? (
               <div className="text-center py-16">
-                <p className="font-serif font-bold text-xl mb-2 flex items-center justify-center gap-2" style={{ color: '#F2EAD8' }}><AlertTriangle size={20} style={{ color: '#B8752A' }} /> Couldn't Load Orders</p>
+                <p className="font-serif font-bold text-xl mb-2 flex items-center justify-center gap-2" style={{ color: '#F2EAD8' }}>
+                  <AlertTriangle size={20} style={{ color: '#B8752A' }} /> Couldn't Load Orders
+                </p>
                 <p className="text-sm mb-6" style={{ color: '#8C7355' }}>{error}</p>
                 <button onClick={loadOrders} className="font-bold text-[11px] tracking-[0.2em] uppercase px-8 py-3"
                   style={{ background: '#B8752A', color: '#1A0A00' }}>
