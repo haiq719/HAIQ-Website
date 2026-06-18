@@ -187,21 +187,37 @@ async function sendNewsletterWelcome({ email, name = 'Cookie Lover' }) {
   });
 }
 
+// Detect plain text (no HTML tags) and convert each paragraph to a styled block.
+// If HTML is provided, wrap it in a brand-styled div so unstyled elements inherit
+// the right color/font instead of rendering as invisible black-on-dark.
+function _renderCampaignBody(rawHtml) {
+  const isPlainText = !/<[a-z][\s\S]*>/i.test(rawHtml.trim());
+  if (isPlainText) {
+    return rawHtml
+      .split(/\n\n+/)
+      .map(p => para(p.trim().replace(/\n/g, '<br>')))
+      .join('');
+  }
+  return `<div style="color:${BRAND.light};font-family:'Arial',sans-serif;font-size:14px;line-height:1.7;">${rawHtml}</div>`;
+}
+
 async function sendCampaign({ email, subject, html }) {
   return send({
     to:      email,
     subject,
     html:    baseLayout(`
-      ${html}
+      ${heading(subject)}
+      ${_renderCampaignBody(html)}
       ${unsubscribeFooter(email)}
     `),
   });
 }
 
 // ── Build campaign HTML for batch sending ──────────────────────────────────────
-function buildCampaignHtml(bodyHtml, recipientEmail) {
+function buildCampaignHtml(subject, bodyHtml, recipientEmail) {
   return baseLayout(`
-    ${bodyHtml}
+    ${heading(subject)}
+    ${_renderCampaignBody(bodyHtml)}
     ${unsubscribeFooter(recipientEmail)}
   `);
 }

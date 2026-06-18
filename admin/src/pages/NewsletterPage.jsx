@@ -183,14 +183,14 @@ export default function NewsletterPage() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5" style={{ color: '#8C7355' }}>
-                      Email Body (HTML) *
+                      Email Body *
                     </label>
                     <textarea rows={10} value={bodyHtml} onChange={e => setBodyHtml(e.target.value)}
-                      placeholder="<p>Your email HTML here...</p>"
-                      className="w-full focus:outline-none resize-none font-mono text-xs"
+                      placeholder={"Write your message here. Separate paragraphs with a blank line.\n\nYou can also use HTML — brand colours and the subject heading are applied automatically."}
+                      className="w-full focus:outline-none resize-none text-xs"
                       style={{ ...inputSty, resize: 'vertical' }} />
                     <p className="text-[10px] mt-1" style={{ color: '#8C7355' }}>
-                      Use HTML. The HAIQ brand template wrapping is applied automatically on the backend.
+                      Plain text or HTML — the HAIQ template, subject heading, and brand colours are added automatically.
                     </p>
                   </div>
                   {campErr && <p className="text-red-400 text-xs">{campErr}</p>}
