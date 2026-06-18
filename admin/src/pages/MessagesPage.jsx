@@ -41,6 +41,9 @@ function useAdminThread(msgId, userId, orderId) {
         r = await adminApi.get(`/admin/messages/thread/${userId}`)
       } else if (orderId) {
         r = await adminApi.get(`/admin/messages/order-thread/${orderId}`)
+      } else {
+        // contact_form message — no thread, just show the single message
+        r = { data: { messages: [] } }
       }
       if (r) setThread(r.data.messages || [])
     } catch {} finally {
@@ -75,7 +78,6 @@ export default function MessagesPage() {
   )
 
   const unread = messages.filter(m => !m.is_read).length
-  const contactMessages = messages.filter(m => m.sender_type === 'contact_form')
 
   const typeLabel = (msg) => {
     if (msg.is_direct)                         return 'Direct Message'
@@ -125,39 +127,40 @@ export default function MessagesPage() {
                 <div className="h-2.5 rounded skeleton" style={{ background: '#3D2000', width: '85%' }} />
               </div>
             ))
-          ) : contactMessages.length === 0 ? (
-            <p className="p-6 text-sm text-center" style={{ color: '#8C7355' }}>No contact form messages yet.</p>
+          ) : messages.length === 0 ? (
+            <p className="p-6 text-sm text-center" style={{ color: '#8C7355' }}>No messages yet.</p>
           ) : (
-            <>
-              {/* Header for contact messages */}
-              {contactMessages.length > 0 && (
-                <div className="px-4 py-2 sticky top-0" style={{ background: '#3D2000', borderBottom: '1px solid rgba(184,117,42,0.3)' }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#B8752A' }}>
-                    💌 Contact Form Messages ({contactMessages.length})
-                  </p>
-                </div>
-              )}
-              {contactMessages.map(m => (
+            messages.map(m => {
+              const displayName = m.user_name || m.sender_name || 'Anonymous'
+              const displayEmail = m.user_email || m.sender_email || ''
+              const isContact = m.sender_type === 'contact_form'
+              return (
                 <button key={m.id} onClick={() => { setSelected(m); setReply('') }}
                   className="w-full text-left px-4 py-3 transition-all hover:opacity-80"
                   style={{
-                    borderBottom:  '1px solid rgba(61,32,0,0.5)',
-                    borderLeft:    selected?.id === m.id ? '3px solid #B8752A' : '3px solid transparent',
-                    background:    selected?.id === m.id ? 'rgba(184,117,42,0.12)' : 'transparent',
+                    borderBottom: '1px solid rgba(61,32,0,0.5)',
+                    borderLeft:   selected?.id === m.id ? '3px solid #B8752A' : '3px solid transparent',
+                    background:   selected?.id === m.id ? 'rgba(184,117,42,0.12)' : 'transparent',
                   }}>
                   <div className="flex items-start justify-between gap-2 mb-0.5">
-                    <p className="text-xs font-bold truncate" style={{ color: m.is_read ? '#B8752A' : '#F2EAD8' }}>
-                      {m.user_name || 'Anonymous'}
+                    <p className="text-xs font-bold truncate" style={{ color: m.is_read ? '#8C7355' : '#F2EAD8' }}>
+                      {displayName}
                     </p>
-                    {!m.is_read && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: '#B8752A' }} />}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {isContact && <span className="text-[9px]">💌</span>}
+                      {!m.is_read && <div className="w-2 h-2 rounded-full" style={{ background: '#B8752A' }} />}
+                    </div>
                   </div>
-                  <p className="text-[10px] mb-1" style={{ color: '#8C7355' }}>
-                    {m.user_email}
-                  </p>
+                  {displayEmail && (
+                    <p className="text-[10px] mb-1 truncate" style={{ color: '#8C7355' }}>{displayEmail}</p>
+                  )}
+                  {m.subject && (
+                    <p className="text-[10px] mb-0.5 font-medium truncate" style={{ color: '#B8752A' }}>{m.subject}</p>
+                  )}
                   <p className="text-[11px] line-clamp-2" style={{ color: 'rgba(242,234,216,0.6)' }}>{m.body}</p>
                 </button>
-              ))}
-            </>
+              )
+            })
           )}
         </div>
       </div>
@@ -170,10 +173,10 @@ export default function MessagesPage() {
             style={{ borderBottom: '1px solid rgba(61,32,0,0.8)' }}>
             <div>
               <p className="font-bold text-sm" style={{ color: '#F2EAD8' }}>
-                {selected.user_name || selected.order_customer || 'Anonymous'}
+                {selected.user_name || selected.sender_name || selected.order_customer || 'Anonymous'}
               </p>
               <p className="text-[10px] mt-0.5" style={{ color: '#8C7355' }}>
-                {typeLabel(selected)} &middot; {selected.user_email || ''}
+                {typeLabel(selected)} &middot; {selected.user_email || selected.sender_email || ''}
               </p>
             </div>
             <button onClick={() => { setSelected(null); setReply('') }}
@@ -184,6 +187,22 @@ export default function MessagesPage() {
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
             {threadLoading && thread.length === 0 ? (
               <div className="py-8 text-center text-sm" style={{ color: '#8C7355' }}>Loading...</div>
+            ) : thread.length === 0 ? (
+              // Contact form or standalone message — show body directly
+              <div className="flex justify-start">
+                <div className="px-4 py-3 text-sm max-w-[80%] leading-relaxed rounded-lg"
+                  style={{ background: '#3D2000', border: '1.5px solid #B8752A', color: '#F2EAD8' }}>
+                  {selected.subject && (
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#B8752A' }}>
+                      {selected.subject}
+                    </p>
+                  )}
+                  <p>{selected.body}</p>
+                  <p className="text-[10px] mt-2 opacity-70">
+                    📨 {selected.sender_name || selected.user_name || 'Customer'} • {new Date(selected.created_at).toLocaleString('en-UG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
             ) : thread.map(m => (
               <div key={m.id} className={`flex ${m.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
                 <div className="px-4 py-3 text-sm max-w-[80%] leading-relaxed rounded-lg"
