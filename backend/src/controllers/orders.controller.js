@@ -3,6 +3,10 @@
 // This ensures what admin sees = what customer paid
 'use strict'
 
+// Must match products.controller.js BOX_OFFICE_*_UUID constants
+const BOX_OFFICE_PRODUCT_UUID = '00000000-0000-4000-a000-000000000001';
+const BOX_OFFICE_VARIANT_UUID = '00000000-0000-4000-a000-000000000002';
+
 const { query, getClient } = require('../config/db')
 const { logger } = require('../config/logger')
 const { generateOrderNumber, generateTrackingToken } = require('../utils/tokenGenerator')
@@ -92,14 +96,14 @@ async function create(req, res, next) {
 
     for (const item of items) {
       // SPECIAL CASE: Box Office (virtual product for Build Your Box feature)
-      if (item.product_id === 999 || item.product_id === '999') {
+      if (item.product_id === BOX_OFFICE_PRODUCT_UUID || item.product_id === 999 || item.product_id === '999') {
         const unit_price = isSpecialDay ? 40000 : 80000
         const line_total = unit_price * item.quantity
         subtotal += line_total
 
         resolvedItems.push({
-          product_id:    999,
-          variant_id:    999,
+          product_id:    BOX_OFFICE_PRODUCT_UUID,
+          variant_id:    BOX_OFFICE_VARIANT_UUID,
           product_name:  'Box Office',
           variant_label: 'Standard Box',
           unit_price,

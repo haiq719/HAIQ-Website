@@ -1,6 +1,10 @@
 const { query } = require('../config/db');
 const { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } = require('../config/constants');
 
+// Fixed UUID for the virtual Box Office product — must match orders.controller.js
+const BOX_OFFICE_PRODUCT_UUID = '00000000-0000-4000-a000-000000000001';
+const BOX_OFFICE_VARIANT_UUID = '00000000-0000-4000-a000-000000000002';
+
 const PRODUCT_SELECT = `
   SELECT
     p.id, p.slug, p.name, p.subtitle, p.description, p.tasting_notes,
@@ -110,9 +114,10 @@ async function getBySlug(req, res, next) {
 }
 
 async function boxOffice(req, res, next) {
-  // Returns the virtual Box Office product for Build Your Box feature
+  // Returns the virtual Box Office product for Build Your Box feature.
+  // IDs are fixed well-known UUIDs so they pass Zod uuid() validation at order time.
   const product = {
-    id: 999,
+    id: BOX_OFFICE_PRODUCT_UUID,
     slug: 'box-office',
     name: 'Box Office',
     subtitle: 'Build Your Own Box',
@@ -129,7 +134,7 @@ async function boxOffice(req, res, next) {
     category: null,
     images: [],
     variants: [
-      { id: 999, label: 'Standard Box', price: 80000, stock_qty: 999, is_default: true, sku: 'BOX-001' }
+      { id: BOX_OFFICE_VARIANT_UUID, label: 'Standard Box', price: 80000, stock_qty: 999, is_default: true, sku: 'BOX-001' }
     ],
     items: []
   };

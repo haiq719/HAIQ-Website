@@ -23,6 +23,7 @@ const isValidUUID = (v) => typeof v === 'string' && UUID_RE.test(v);
 
 const isValidCartItem = (item) => {
   if (item.itemType === 'box') {
+    // boxProductId/boxVariantId must be valid UUIDs (old integer 999 carts are dropped)
     return isValidUUID(item.boxProductId) && isValidUUID(item.boxVariantId);
   }
   return isValidUUID(item.productId) && isValidUUID(item.variantId);
