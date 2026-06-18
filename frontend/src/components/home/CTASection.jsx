@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useRef, useEffect, useState } from 'react'
 import Crown from '../shared/Crown'
+import { UtensilsCrossed, Package, Crown as CrownIcon } from 'lucide-react'
 
 export default function CTASection() {
   const [ref, setRef] = useState(null)
@@ -57,12 +58,12 @@ export default function CTASection() {
         {/* Trust signals */}
         <div className="flex items-center justify-center gap-10 md:gap-16 mb-14 flex-wrap">
           {[
-            { icon: '🍪', label: 'Baked Fresh Daily'  },
-            { icon: '📦', label: 'Same-Day Delivery'  },
-            { icon: '👑', label: 'Loyalty Rewards'    },
-          ].map(({ icon, label }) => (
+            { Icon: UtensilsCrossed, label: 'Baked Fresh Daily' },
+            { Icon: Package,         label: 'Same-Day Delivery' },
+            { Icon: CrownIcon,       label: 'Loyalty Rewards'   },
+          ].map(({ Icon, label }) => (
             <div key={label} className="flex items-center gap-2">
-              <span className="text-lg">{icon}</span>
+              <Icon size={16} style={{ color: '#B8752A' }} />
               <span className="text-light/50 text-xs font-medium tracking-wide">{label}</span>
             </div>
           ))}

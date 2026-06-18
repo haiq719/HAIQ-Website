@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import Button from '../shared/Button'
+import { ShoppingBag } from 'lucide-react'
 
 // ── Box item — single row with collapsible cookie list ────────────────────────
 function BoxCartItem({ item, onRemove }) {
@@ -204,7 +205,7 @@ export default function CartDrawer({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto px-5">
           {isEmpty ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
-              <p className="text-4xl mb-4">🍪</p>
+              <ShoppingBag size={36} style={{ color: 'rgba(184,117,42,0.35)' }} className="mb-4" />
               <p className="font-serif font-bold text-lg mb-1" style={{ color: '#F2EAD8' }}>Your cart is empty</p>
               <p className="text-sm mb-6" style={{ color: '#8C7355' }}>Add something delicious.</p>
               <button onClick={onClose} className="text-[11px] font-semibold tracking-[0.2em] uppercase hover:opacity-70 transition"

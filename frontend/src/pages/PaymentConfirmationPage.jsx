@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../services/api'
+import { CheckCircle, AlertTriangle } from 'lucide-react'
 
 const PAYMENT_METHODS = {
   mtn_momo: {
@@ -105,7 +106,7 @@ export default function PaymentConfirmationPage() {
     return (
       <div style={{ background: '#0E0600', minHeight: '100vh' }} className="flex items-center justify-center">
         <div className="text-center px-4">
-          <div className="text-6xl mb-6">✓</div>
+          <CheckCircle size={56} style={{ color: '#B8752A' }} className="mb-6 mx-auto" />
           <h1 className="font-serif text-3xl mb-2" style={{ color: '#F2EAD8' }}>Payment Verified!</h1>
           <p style={{ color: '#8C7355' }}>Your order is being confirmed...</p>
         </div>
@@ -118,7 +119,7 @@ export default function PaymentConfirmationPage() {
       <div style={{ background: '#0E0600', minHeight: '100vh' }} className="flex items-center justify-center">
         <div className="max-w-md px-4">
           <div className="text-center mb-8">
-            <div className="text-6xl mb-6">⚠️</div>
+            <AlertTriangle size={56} style={{ color: '#B8752A' }} className="mb-6 mx-auto" />
             <h1 className="font-serif text-3xl mb-2" style={{ color: '#F2EAD8' }}>Connection Error</h1>
             <p style={{ color: '#8C7355' }} className="mb-6">
               {pollError || 'Unable to check payment status. Please try again.'}

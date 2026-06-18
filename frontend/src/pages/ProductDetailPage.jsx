@@ -10,6 +10,7 @@ import RelatedProducts from '../components/product/RelatedProducts'
 import ProductReviews from '../components/product/ProductReviews'
 import { ProductSEO } from '../components/shared/SEO'
 import Button from '../components/shared/Button'
+import { Package, UtensilsCrossed, MessageCircle, Lock } from 'lucide-react'
 
 export default function ProductDetailPage() {
   const { slug }   = useParams()
@@ -195,13 +196,13 @@ export default function ProductDetailPage() {
             {/* Trust signals */}
             <div className="mt-6 pt-5 border-t border-gray-100 grid grid-cols-2 gap-3">
               {[
-                ['📦', 'Same-day delivery in Kampala'],
-                ['🍪', 'Baked fresh daily'],
-                ['✉', 'WhatsApp order updates'],
-                ['🔒', 'Secure checkout'],
-              ].map(([icon, text]) => (
+                [Package,          'Same-day delivery in Kampala'],
+                [UtensilsCrossed,  'Baked fresh daily'],
+                [MessageCircle,    'WhatsApp order updates'],
+                [Lock,             'Secure checkout'],
+              ].map(([Icon, text]) => (
                 <div key={text} className="flex items-center gap-2">
-                  <span className="text-base">{icon}</span>
+                  <Icon size={14} className="text-primary flex-shrink-0" />
                   <span className="text-xs text-gray-400">{text}</span>
                 </div>
               ))}

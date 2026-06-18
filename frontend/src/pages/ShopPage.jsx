@@ -4,6 +4,7 @@ import api from '../services/api'
 import { useCart } from '../context/CartContext'
 import Crown from '../components/shared/Crown'
 import { ShopSEO } from '../components/shared/SEO'
+import { AlertTriangle } from 'lucide-react'
 
 function ProductCard({ product }) {
   const { addItem, openDrawer } = useCart()
@@ -237,7 +238,8 @@ export default function ShopPage() {
             {!loading && error && (
               <div className="text-center py-20">
                 <p className="font-serif text-2xl font-bold mb-2" style={{ color: '#F2EAD8' }}>
-                  ⚠️ Couldn't Load Products
+                  <AlertTriangle size={22} className="mx-auto mb-2" style={{ color: '#B8752A' }} />
+                  Couldn't Load Products
                 </p>
                 <p style={{ color: '#8C7355' }} className="text-sm mb-4">{error}</p>
                 <button

@@ -4,15 +4,16 @@ import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
+import { ClipboardList, ChefHat, Flame, Package, Bike, Sparkles, XCircle, AlertTriangle } from 'lucide-react'
 
 const STATUS_CONFIG = {
-  pending:         { label: 'Order Received',    emoji: '📋', step: 1, desc: 'We have your order and are getting started.' },
-  freshly_kneaded: { label: 'Freshly Kneaded',   emoji: '🤲', step: 2, desc: 'Our bakers are working on your cookies right now.' },
-  ovenbound:       { label: 'In the Oven',       emoji: '🔥', step: 3, desc: 'Your cookies are baking. The good part.' },
-  on_the_cart:     { label: 'Packed & Ready',    emoji: '🛒', step: 4, desc: 'Packaged and waiting for pickup.' },
-  en_route:        { label: 'En Route',          emoji: '🚴', step: 5, desc: 'On the way to you. Stay close.' },
-  delivered:       { label: 'Delivered.',        emoji: '🎉', step: 6, desc: 'Enjoy every bite.' },
-  cancelled:       { label: 'Cancelled',         emoji: '❌', step: 0, desc: 'This order was cancelled.' },
+  pending:         { label: 'Order Received',  icon: ClipboardList, step: 1, desc: 'We have your order and are getting started.' },
+  freshly_kneaded: { label: 'Freshly Kneaded', icon: ChefHat,       step: 2, desc: 'Our bakers are working on your cookies right now.' },
+  ovenbound:       { label: 'In the Oven',     icon: Flame,         step: 3, desc: 'Your cookies are baking. The good part.' },
+  on_the_cart:     { label: 'Packed & Ready',  icon: Package,       step: 4, desc: 'Packaged and waiting for pickup.' },
+  en_route:        { label: 'En Route',        icon: Bike,          step: 5, desc: 'On the way to you. Stay close.' },
+  delivered:       { label: 'Delivered.',      icon: Sparkles,      step: 6, desc: 'Enjoy every bite.' },
+  cancelled:       { label: 'Cancelled',       icon: XCircle,       step: 0, desc: 'This order was cancelled.' },
 }
 
 const ACTIVE_STATUSES  = ['pending','freshly_kneaded','ovenbound','on_the_cart','en_route']
@@ -43,14 +44,15 @@ function OrderProgress({ status }) {
                 <div className="absolute" style={{ display: 'none' }} />
               )}
               <div
-                className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-base md:text-lg transition-all"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all"
                 style={{
                   background: done || now ? '#B8752A' : 'rgba(61,32,0,0.6)',
                   border:     now ? '2px solid #E8C88A' : '2px solid transparent',
                   boxShadow:  now ? '0 0 16px rgba(184,117,42,0.4)' : 'none',
+                  color:      done || now ? '#1A0A00' : 'rgba(242,234,216,0.3)',
                 }}
               >
-                {cfg.emoji}
+                <cfg.icon size={14} />
               </div>
               <p className="text-[8px] md:text-[10px] mt-1 text-center leading-tight hidden sm:block"
                 style={{ color: now ? '#B8752A' : 'rgba(242,234,216,0.3)' }}>
@@ -387,7 +389,7 @@ export default function TrackOrderPage() {
             {/* Order list */}
             {error && !loading ? (
               <div className="text-center py-16">
-                <p className="font-serif font-bold text-xl mb-2" style={{ color: '#F2EAD8' }}>⚠️ Couldn't Load Orders</p>
+                <p className="font-serif font-bold text-xl mb-2 flex items-center justify-center gap-2" style={{ color: '#F2EAD8' }}><AlertTriangle size={20} style={{ color: '#B8752A' }} /> Couldn't Load Orders</p>
                 <p className="text-sm mb-6" style={{ color: '#8C7355' }}>{error}</p>
                 <button onClick={loadOrders} className="font-bold text-[11px] tracking-[0.2em] uppercase px-8 py-3"
                   style={{ background: '#B8752A', color: '#1A0A00' }}>
@@ -413,7 +415,7 @@ export default function TrackOrderPage() {
             ) : (
               <div className="space-y-3">
                 {displayList.map(order => {
-                  const cfg = STATUS_CONFIG[order.status] || { label: order.status, emoji: '📋' }
+                  const cfg = STATUS_CONFIG[order.status] || { label: order.status, icon: ClipboardList }
                   return (
                     <button
                       key={order.id}
@@ -432,7 +434,7 @@ export default function TrackOrderPage() {
                             <p className="font-mono font-bold text-sm" style={{ color: '#E8C88A' }}>
                               {order.order_number}
                             </p>
-                            <span className="text-sm">{cfg.emoji}</span>
+                            <cfg.icon size={13} style={{ color: '#B8752A' }} />
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
                               style={{ background: 'rgba(184,117,42,0.12)', color: '#B8752A' }}>
                               {cfg.label}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../shared/Button'
+import { Star } from 'lucide-react'
 
 // ── Star Rating ───────────────────────────────────────────────────────────────
 function StarRating({ value, onChange, readonly = false, size = 'md' }) {
@@ -156,7 +157,7 @@ export default function ProductReviews({ productSlug }) {
         </div>
       ) : reviews.length === 0 ? (
         <div className="py-10 text-center" style={{ background: '#F2EAD8', border: '1px solid rgba(184,117,42,0.15)' }}>
-          <p className="text-3xl mb-3">🍪</p>
+          <Star size={32} style={{ color: 'rgba(184,117,42,0.4)' }} className="mb-3 mx-auto" />
           <p className="font-serif text-lg font-bold mb-1" style={{ color: '#1A0A00' }}>No reviews yet</p>
           <p className="text-sm" style={{ color: '#8C7355' }}>Be the first to share your experience.</p>
         </div>

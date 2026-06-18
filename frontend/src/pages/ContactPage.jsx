@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify'
 import api from '../services/api'
 import Button from '../components/shared/Button'
 import { ContactSEO } from '../components/shared/SEO'
+import { CheckCircle } from 'lucide-react'
 
 // SVG Icons
 const PhoneIcon = () => (
@@ -245,7 +246,7 @@ export default function ContactPage() {
 
             {status === 'success' ? (
               <div className="bg-green-50 border border-green-100 rounded-2xl p-8 text-center">
-                <p className="text-4xl mb-3">🍪</p>
+                <CheckCircle size={40} style={{ color: '#B8752A' }} className="mb-3 mx-auto" />
                 <h3 className="font-serif text-xl font-bold text-dark mb-2">Message received!</h3>
                 <p className="text-gray-500 text-sm">
                   We will get back to you within a few hours on WhatsApp or email.

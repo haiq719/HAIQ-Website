@@ -32,7 +32,7 @@ export default function HeroSection() {
   return (
     <section className="relative h-screen min-h-[640px] overflow-hidden" style={{ background: '#1A0A00' }}>
 
-      {/* Solid dark fill — no gradient, no image */}
+      {/* Solid dark fill */}
       <div className="absolute inset-0" style={{ background: '#1A0A00' }} />
 
       {/* Subtle noise grain */}
@@ -48,15 +48,14 @@ export default function HeroSection() {
       {/* Thin top rule */}
       <div className="absolute top-0 left-0 right-0 z-20" style={{ height: '1px', background: 'rgba(184,117,42,0.3)' }} />
 
-      {/* Main content */}
-      <div className="relative z-10 h-full flex flex-col">
+      {/* Main content — pb reserves space so spec strip never overlaps */}
+      <div className="relative z-10 h-full flex flex-col md:pb-[104px]">
 
         {/* Top meta row */}
         <div className="flex items-center justify-between px-8 md:px-20 pt-28 md:pt-32" style={show(0)}>
           <p className="text-[10px] font-semibold tracking-[0.3em] uppercase" style={{ color: 'rgba(184,117,42,0.55)' }}>
             Kampala · Uganda
           </p>
-          {/* Est badge — inline in the meta row, no conflict with content */}
           <div
             className="hidden md:flex flex-col items-center justify-center w-14 h-14"
             style={{ border: '1px solid rgba(184,117,42,0.25)' }}
@@ -67,8 +66,8 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Centre — headline + CTAs. overflow:hidden prevents content bleeding into spec strip */}
-        <div className="flex-1 flex items-center px-8 md:px-20 overflow-hidden">
+        {/* Centre — headline + CTAs */}
+        <div className="flex-1 flex items-center px-8 md:px-20">
           <div className="max-w-3xl">
 
             <div style={show(60)} className="mb-5">
@@ -99,7 +98,6 @@ export default function HeroSection() {
             {/* CTAs */}
             <div className="flex items-center gap-6 flex-wrap" style={show(280)}>
 
-              {/* Order Now — animated button */}
               <Link
                 to="/shop"
                 onClick={handlePress}
@@ -128,7 +126,6 @@ export default function HeroSection() {
                 }}
               >
                 <span className="relative z-10">Order Now</span>
-                {/* Ripple layer */}
                 {pressed && (
                   <span
                     className="absolute inset-0 rounded-full animate-ping"
@@ -150,54 +147,48 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Spec strip — desktop only, in flow so it never overlaps content */}
-        <div
-          className="hidden md:block px-20 pb-10 flex-shrink-0"
-          style={show(400)}
-        >
-          {/* Thin separator above spec strip */}
-          <div className="w-full mb-6" style={{ height: '1px', background: 'rgba(184,117,42,0.15)' }} />
+      {/* Spec strip — absolutely at bottom, outside the flex flow so it never compresses content */}
+      <div
+        className="hidden md:block absolute bottom-0 left-0 right-0 z-10 px-20 pb-10"
+        style={show(400)}
+      >
+        <div className="w-full mb-6" style={{ height: '1px', background: 'rgba(184,117,42,0.15)' }} />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-0">
-              {SPECS.map(({ label, value }, i) => (
-                <div
-                  key={label}
-                  className="px-6"
-                  style={{
-                    borderLeft: i === 0 ? 'none' : '1px solid rgba(184,117,42,0.2)',
-                  }}
-                >
-                  <p
-                    className="text-[9px] font-semibold tracking-[0.28em] uppercase mb-1"
-                    style={{ color: 'rgba(184,117,42,0.5)' }}
-                  >
-                    {label}
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(242,234,216,0.8)' }}>
-                    {value}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Scroll indicator */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-px h-10 relative overflow-hidden" style={{ background: 'rgba(242,234,216,0.1)' }}>
-                <div
-                  className="absolute top-0 w-full h-1/2"
-                  style={{ background: '#B8752A', animation: 'scrollDot 1.8s ease-in-out infinite' }}
-                />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-0">
+            {SPECS.map(({ label, value }, i) => (
+              <div
+                key={label}
+                className="px-6"
+                style={{ borderLeft: i === 0 ? 'none' : '1px solid rgba(184,117,42,0.2)' }}
+              >
+                <p className="text-[9px] font-semibold tracking-[0.28em] uppercase mb-1"
+                  style={{ color: 'rgba(184,117,42,0.5)' }}>
+                  {label}
+                </p>
+                <p className="text-sm font-bold" style={{ color: 'rgba(242,234,216,0.8)' }}>
+                  {value}
+                </p>
               </div>
-              <span className="text-[9px] tracking-[0.25em] uppercase" style={{ color: 'rgba(242,234,216,0.2)' }}>Scroll</span>
+            ))}
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-10 relative overflow-hidden" style={{ background: 'rgba(242,234,216,0.1)' }}>
+              <div
+                className="absolute top-0 w-full h-1/2"
+                style={{ background: '#B8752A', animation: 'scrollDot 1.8s ease-in-out infinite' }}
+              />
             </div>
+            <span className="text-[9px] tracking-[0.25em] uppercase" style={{ color: 'rgba(242,234,216,0.2)' }}>Scroll</span>
           </div>
         </div>
-
-        {/* Thin bottom rule — no gradient */}
-        <div className="absolute bottom-0 left-0 right-0 z-20" style={{ height: '1px', background: 'rgba(184,117,42,0.2)' }} />
       </div>
+
+      {/* Thin bottom rule */}
+      <div className="absolute bottom-0 left-0 right-0 z-20" style={{ height: '1px', background: 'rgba(184,117,42,0.2)' }} />
     </section>
   )
 }

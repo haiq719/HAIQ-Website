@@ -1,6 +1,7 @@
 import { useParams, useLocation, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import api from '../services/api'
+import { AlertTriangle, CheckCircle, Mail, MessageCircle, Package } from 'lucide-react'
 
 export default function OrderConfirmationPage() {
   const { token }  = useParams()
@@ -31,7 +32,7 @@ export default function OrderConfirmationPage() {
       <div className="min-h-screen bg-light flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
           <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-5xl">⚠️</span>
+            <AlertTriangle size={44} className="text-red-500" />
           </div>
           <h1 className="font-serif text-3xl font-bold text-dark mb-2">Couldn't Load Order</h1>
           <p className="text-gray-500 mb-8">{error}</p>
@@ -48,7 +49,7 @@ export default function OrderConfirmationPage() {
       <div className="max-w-md w-full text-center">
         {/* Animated checkmark */}
         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-5xl">✓</span>
+          <CheckCircle size={52} className="text-green-500" />
         </div>
 
         <p className="text-primary text-xs font-semibold tracking-widest uppercase mb-2">Order Confirmed</p>
@@ -76,10 +77,19 @@ export default function OrderConfirmationPage() {
 
         <div className="bg-dark text-light rounded-2xl p-5 mb-6 text-left">
           <p className="text-primary text-xs font-semibold tracking-widest uppercase mb-3">What's Next</p>
-          <div className="space-y-2 text-sm text-light/80">
-            <p>📧 Check your email for your order confirmation</p>
-            <p>💬 We'll message you on WhatsApp with updates</p>
-            <p>📦 Same-day delivery if ordered before noon</p>
+          <div className="space-y-3 text-sm text-light/80">
+            <div className="flex items-center gap-2.5">
+              <Mail size={14} style={{ color: '#B8752A', flexShrink: 0 }} />
+              <span>Check your email for your order confirmation</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <MessageCircle size={14} style={{ color: '#B8752A', flexShrink: 0 }} />
+              <span>We'll message you on WhatsApp with updates</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <Package size={14} style={{ color: '#B8752A', flexShrink: 0 }} />
+              <span>Same-day delivery if ordered before noon</span>
+            </div>
           </div>
         </div>
 

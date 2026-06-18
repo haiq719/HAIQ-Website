@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
+import { AlertTriangle } from 'lucide-react'
 
 // ── Profile Tab ───────────────────────────────────────────────
 function ProfileTab({ user, onUpdated }) {
@@ -102,7 +103,7 @@ function OrdersTab() {
 
   if (error) return (
     <div className="py-12 text-center">
-      <p className="font-serif text-xl font-bold mb-3" style={{ color: '#F2EAD8' }}>⚠️ Couldn't Load Orders</p>
+      <p className="font-serif text-xl font-bold mb-3 flex items-center justify-center gap-2" style={{ color: '#F2EAD8' }}><AlertTriangle size={20} style={{ color: '#B8752A' }} />Couldn't Load Orders</p>
       <p className="text-sm mb-4" style={{ color: '#8C7355' }}>{error}</p>
       <button onClick={() => window.location.reload()} className="font-bold text-[11px] tracking-[0.2em] uppercase px-8 py-3"
         style={{ background: '#B8752A', color: '#1A0A00' }}>Try Again</button>
