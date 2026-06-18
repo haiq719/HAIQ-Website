@@ -4,8 +4,8 @@ const { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } = require('../config/constants'
 const PRODUCT_SELECT = `
   SELECT
     p.id, p.slug, p.name, p.subtitle, p.description, p.tasting_notes,
-    p.base_price, p.is_active, p.is_featured, p.is_limited, p.sort_order,
-    p.created_at, p.updated_at,
+    p.base_price, p.off_peak_price, p.is_active, p.is_featured, p.is_limited,
+    p.is_box_item, p.sort_order, p.created_at, p.updated_at,
     json_build_object('id', c.id, 'name', c.name, 'slug', c.slug) AS category,
     COALESCE(
       json_agg(DISTINCT jsonb_build_object(

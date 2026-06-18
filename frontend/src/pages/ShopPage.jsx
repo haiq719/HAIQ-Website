@@ -119,9 +119,13 @@ function SkeletonCard() {
 }
 
 const TABS = [
-  { key: 'all',           label: 'All Cookies' },
+  { key: 'all',           label: 'Cookies' },
+  { key: 'drinks',        label: 'Drinks' },
   { key: 'build-your-box',label: 'Build Your Box' },
 ]
+
+// Maps a tab key to the backend category slug to fetch
+const TAB_CATEGORY = { all: 'cookies', drinks: 'drinks' }
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -142,7 +146,7 @@ export default function ShopPage() {
     if (activeTab === 'build-your-box') return
     setLoading(true)
     setError(null)
-    const params = new URLSearchParams({ page, limit: 12, category: 'cookies' })
+    const params = new URLSearchParams({ page, limit: 12, category: TAB_CATEGORY[activeTab] || 'cookies' })
     api.get(`/products?${params}`)
       .then(res => {
         const incoming = res.data.products || []
@@ -223,7 +227,7 @@ export default function ShopPage() {
         )}
 
         {/* Product grid */}
-        {activeTab === 'all' && (
+        {(activeTab === 'all' || activeTab === 'drinks') && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
               {products.map(p => <ProductCard key={p.id} product={p} />)}

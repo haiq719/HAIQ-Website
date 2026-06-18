@@ -158,9 +158,12 @@ const adminCreateProductSchema = z.object({
   subtitle: safeText(0, 200).optional().nullable(),
   description: safeText(0, 2000).optional().nullable(),
   tasting_notes: safeText(0, 1000).optional().nullable(),
+  category_id: z.number().int().positive().optional().nullable(),
   base_price: z.number().min(0).max(10_000_000),
+  off_peak_price: z.number().min(0).max(10_000_000).optional().nullable(),
   is_featured: z.boolean().optional(),
   is_limited: z.boolean().optional(),
+  is_box_item: z.boolean().optional(),
   variants: z.array(z.object({
     label: safeText(1, 100),
     price: z.number().min(0).max(10_000_000),

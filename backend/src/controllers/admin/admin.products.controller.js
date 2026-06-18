@@ -18,12 +18,12 @@ async function create(req, res, next) {
   const client = await getClient();
   try {
     await client.query('BEGIN');
-    const { name, slug, subtitle, description, tasting_notes, category_id, base_price, is_featured, is_limited, variants, items } = req.body;
+    const { name, slug, subtitle, description, tasting_notes, category_id, base_price, off_peak_price, is_featured, is_limited, is_box_item, variants, items } = req.body;
 
     const { rows: [product] } = await client.query(`
-      INSERT INTO products (name, slug, subtitle, description, tasting_notes, category_id, base_price, is_featured, is_limited)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *
-    `, [name, slug, subtitle, description, tasting_notes, category_id, base_price, is_featured || false, is_limited || false]);
+      INSERT INTO products (name, slug, subtitle, description, tasting_notes, category_id, base_price, off_peak_price, is_featured, is_limited, is_box_item)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *
+    `, [name, slug, subtitle, description, tasting_notes, category_id || null, base_price, off_peak_price ?? null, is_featured || false, is_limited || false, is_box_item || false]);
 
     if (variants?.length) {
       for (const v of variants) {
@@ -60,7 +60,7 @@ async function create(req, res, next) {
 
 async function update(req, res, next) {
   try {
-    const allowed = ['name','subtitle','description','tasting_notes','base_price','is_featured','is_limited','is_active','sort_order'];
+    const allowed = ['name','subtitle','description','tasting_notes','category_id','base_price','off_peak_price','is_featured','is_limited','is_box_item','is_active','sort_order'];
     const updates = [];
     const params = [];
     for (const key of allowed) {

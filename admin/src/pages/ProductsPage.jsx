@@ -11,12 +11,20 @@ function ProductModal({ product, onClose, onSaved }) {
     subtitle:      product?.subtitle      || '',
     description:   product?.description   || '',
     tasting_notes: product?.tasting_notes || '',
+    category_id:   product?.category_id   ?? product?.category?.id ?? '',
     base_price:    product?.base_price    || '',
     is_featured:   product?.is_featured   ?? false,
     is_limited:    product?.is_limited    ?? false,
     is_box_item:   product?.is_box_item   ?? false,
     off_peak_price: product?.off_peak_price || '',
   })
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    adminApi.get('/categories')
+      .then(res => setCategories(res.data.categories || []))
+      .catch(() => setCategories([]))
+  }, [])
   const [variants,  setVariants]  = useState(
     product?.variants?.length
       ? product.variants.map(v => ({ ...v }))
@@ -55,6 +63,7 @@ function ProductModal({ product, onClose, onSaved }) {
     try {
       const payload = {
         ...form,
+        category_id:   form.category_id ? parseInt(form.category_id) : null,
         base_price:    parseFloat(form.base_price),
         off_peak_price: form.off_peak_price ? parseFloat(form.off_peak_price) : null,
         variants: variants.map(v => ({ ...v, price: parseFloat(v.price), stock_qty: parseInt(v.stock_qty)||0 })),
@@ -151,9 +160,20 @@ function ProductModal({ product, onClose, onSaved }) {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#8C7355' }}>Subtitle</label>
-              <input value={form.subtitle} onChange={upd('subtitle')} placeholder="Chocolate Cookies" className={inputCls} style={inputSty} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#8C7355' }}>Subtitle</label>
+                <input value={form.subtitle} onChange={upd('subtitle')} placeholder="Chocolate Cookies" className={inputCls} style={inputSty} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#8C7355' }}>Category</label>
+                <select value={form.category_id} onChange={upd('category_id')} className={inputCls} style={inputSty}>
+                  <option value="">— Uncategorized —</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
