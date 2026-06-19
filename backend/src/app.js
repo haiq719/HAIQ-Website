@@ -117,6 +117,9 @@ app.get('/debug/tables', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── SEO files (dynamic sitemap.xml + llms.txt, proxied from frontend) ──────
+app.use('/', require('./routes/seo.routes'));
+
 // ─── API Routes ────────────────────────────────────────────────
 app.use('/v1', routes);
 

@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://haiq-api-9im4.onrender.com/sitemap.xml" },
+    { "source": "/llms.txt", "destination": "https://haiq-api-9im4.onrender.com/llms.txt" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

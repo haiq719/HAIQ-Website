@@ -102,6 +102,20 @@ changed blindly**. Revisit if Usability stays below A after Phases 1–5.
 - **Note:** `janlin` currently 404s on the public API, so it is intentionally excluded
   to avoid a broken sitemap entry. Add it once the drink is publicly live.
 
+### Phase 6 — Dynamic sitemap.xml + llms.txt (never drift)
+- Replaced the static `public/sitemap.xml` and `public/llms.txt` with backend
+  generators (`seo.controller.js` → `GET /sitemap.xml`, `GET /llms.txt`) that build
+  both files live from the active product catalogue (`products WHERE is_active = true`).
+- The frontend `vercel.json` proxies `/sitemap.xml` and `/llms.txt` to the backend,
+  so they're still served from the site root — but always current.
+- Responses set `Cache-Control: max-age=3600` to absorb crawler traffic without
+  hammering the API.
+- Site origin is driven by `FRONTEND_URL` env (defaults to the Vercel domain), so it
+  switches automatically when a branded domain is connected.
+- **Why it helps:** activating/deactivating a product in the admin (e.g. Janlin) is
+  now reflected in the sitemap and llms.txt with zero manual edits — they can never
+  drift from reality.
+
 ### Phase 5 — Admin de-indexing
 - Admin `index.html` now carries `<meta name="robots" content="noindex, nofollow">`
   and a `robots.txt` that disallows all crawlers.
