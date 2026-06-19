@@ -21,6 +21,13 @@ export default {
         border:      '#3D2000',   // border color
         muted:       '#8C7355',   // subdued text
         sienna:      '#7A3B1E',   // deep accent
+
+        // ── Aliases used throughout the UI (previously undefined → unstyled) ──
+        primary:     '#B8752A',   // amber — buttons, links, active state
+        secondary:   '#D4A574',   // tan — hover / secondary accent
+        accent:      '#E8C88A',   // gold — headings & highlights
+        dark:        '#1A0A00',   // dark surface / button text on gold
+        light:       '#F2EAD8',   // cream — primary text
       },
       fontFamily: {
         serif: ['"Playfair Display"', 'Georgia', 'serif'],

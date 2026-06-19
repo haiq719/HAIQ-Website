@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import adminApi from '../services/adminApi'
 import Button from '../components/shared/Button'
+import { PageShell, PageHeader, Card, Pill, EmptyState } from '../components/shared/ui'
+import { CalendarHeart, Plus, Trash2, CheckCircle2, CircleOff, AlertTriangle, Info } from 'lucide-react'
 
 export default function SpecialDaysPage() {
   const [days,      setDays]      = useState([])
@@ -29,8 +31,7 @@ export default function SpecialDaysPage() {
       load()
     } catch (e) {
       const data = e.response?.data
-      const detail = data?.details?.[0]?.message
-      setErr(detail || data?.error || 'Failed to save. Please try again.')
+      setErr(data?.details?.[0]?.message || data?.error || 'Failed to save. Please try again.')
     }
     finally { setAdding(false) }
   }
@@ -47,91 +48,79 @@ export default function SpecialDaysPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10)
-  const inputSty = {
-    background: '#1A0A00',
-    border:     '1px solid rgba(184,117,42,0.2)',
-    color:      '#F2EAD8',
-    fontSize:   '13px',
-    padding:    '9px 13px',
-  }
 
   return (
-    <div className="space-y-5 max-w-[700px]">
-      <p className="text-sm leading-relaxed" style={{ color: '#8C7355' }}>
-        Special days make Build Your Box available at the discounted price of UGX 40,000.
-        Outside of these days it reverts to UGX 80,000.
-      </p>
+    <PageShell deps={[loading]} max="760px">
+      <PageHeader label="Pricing" title="Special Days" icon={CalendarHeart} />
+
+      <Card className="!py-3 flex items-start gap-3" style={{ background: 'rgba(184,117,42,0.06)', borderColor: 'rgba(184,117,42,0.2)' }}>
+        <Info size={16} style={{ color: '#B8752A', flexShrink: 0, marginTop: 2 }} />
+        <p className="text-sm leading-relaxed" style={{ color: '#8C7355' }}>
+          Special days make Build Your Box available at the discounted price of <strong style={{ color: '#E8C88A' }}>UGX 40,000</strong>.
+          Outside of these days it reverts to <strong style={{ color: '#F2EAD8' }}>UGX 80,000</strong>.
+        </p>
+      </Card>
 
       {/* Add form */}
-      <div className="p-5" style={{ background: '#2A1200', border: '1px solid rgba(184,117,42,0.2)' }}>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] mb-4" style={{ color: '#8C7355' }}>
-          Add Special Day
+      <Card>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] mb-4 flex items-center gap-1.5" style={{ color: '#8C7355' }}>
+          <Plus size={12} /> Add Special Day
         </p>
         <div className="flex gap-3 flex-wrap">
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            className="focus:outline-none" style={{ ...inputSty, minWidth: '150px' }} />
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            className="focus:outline-none" style={{ ...inputSty, minWidth: '150px' }} />
-          <input type="text" value={label} onChange={e => setLabel(e.target.value)}
-            placeholder="e.g. Valentine's Day" className="flex-1 focus:outline-none min-w-[160px]" style={inputSty} />
-          <Button onClick={add} disabled={adding} loading={adding} variant="primary" size="sm">
-            Add
-          </Button>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="admin-input" style={{ minWidth: '150px', width: 'auto' }} />
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="admin-input" style={{ minWidth: '150px', width: 'auto' }} />
+          <input type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Valentine's Day" className="admin-input flex-1" style={{ minWidth: '160px' }} />
+          <Button onClick={add} disabled={adding} loading={adding} variant="primary" size="sm"><Plus size={14} /> Add</Button>
         </div>
-        {err && <p className="text-red-400 text-xs mt-2">{err}</p>}
-      </div>
+        {err && <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: '#f87171' }}><AlertTriangle size={13} /> {err}</p>}
+      </Card>
 
-      {/* Days list */}
-      <div style={{ background: '#2A1200', border: '1px solid rgba(184,117,42,0.2)', overflow: 'hidden' }}>
+      {/* List */}
+      <Card className="!p-0 overflow-hidden">
         {loading ? (
-          <div className="p-6 space-y-3">
-            {[1,2,3].map(i => <div key={i} className="h-10 skeleton rounded" style={{ background: '#3D2000' }} />)}
-          </div>
+          <div className="p-6 space-y-3">{[1,2,3].map(i => <div key={i} className="h-10 skeleton rounded" style={{ background: '#3D2000' }} />)}</div>
         ) : days.length === 0 ? (
-          <div className="py-10 text-center">
-            <p className="text-sm" style={{ color: '#8C7355' }}>No special days configured yet.</p>
-          </div>
+          <EmptyState icon={CalendarHeart} title="No special days yet" sub="Add a date range above to enable discounted Box pricing." />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(61,32,0,0.8)' }}>
-                {['Date From','Date To','Label','Status',''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-[9px] font-semibold text-muted uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {days.map(d => {
-                const isPast = d.date_to < today
-                const isToday = today >= d.date_from && today <= d.date_to
-                return (
-                  <tr key={d.id} style={{ borderBottom: '1px solid rgba(61,32,0,0.4)' }}>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: '#F2EAD8' }}>{d.date_from}</td>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: '#F2EAD8' }}>{d.date_to}</td>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: isToday ? '#E8C88A' : '#F2EAD8' }}>
-                      {d.label}
-                      {isToday && <span className="ml-2 text-[9px] font-bold" style={{ color: '#E8C88A' }}>TODAY</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => toggle(d.id)}
-                        className="text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider"
-                        style={d.is_active
-                          ? { color: '#4ade80', background: 'rgba(74,222,128,0.1)' }
-                          : { color: '#8C7355', background: 'rgba(140,115,85,0.1)' }}>
-                        {d.is_active ? '● Active' : '○ Inactive'}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => del(d.id)} className="text-[10px] hover:opacity-70 transition"
-                        style={{ color: '#f87171' }}>Delete</button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto admin-scroll">
+            <table className="w-full text-sm min-w-[520px]">
+              <thead>
+                <tr style={{ borderBottom: '1px solid #3D2000' }}>
+                  {['Date From','Date To','Label','Status',''].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wider" style={{ color: '#8C7355' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {days.map(d => {
+                  const isToday = today >= d.date_from && today <= d.date_to
+                  return (
+                    <tr key={d.id} style={{ borderBottom: '1px solid rgba(61,32,0,0.4)' }}>
+                      <td className="px-4 py-3 font-mono text-xs" style={{ color: '#F2EAD8' }}>{d.date_from}</td>
+                      <td className="px-4 py-3 font-mono text-xs" style={{ color: '#F2EAD8' }}>{d.date_to}</td>
+                      <td className="px-4 py-3 text-xs" style={{ color: isToday ? '#E8C88A' : '#F2EAD8' }}>
+                        {d.label}
+                        {isToday && <span className="ml-2"><Pill color="#E8C88A">Today</Pill></span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button onClick={() => toggle(d.id)} className="admin-pill" title="Toggle"
+                          style={d.is_active ? { color: '#4ade80', background: 'rgba(74,222,128,0.12)' } : { color: '#8C7355', background: 'rgba(140,115,85,0.12)' }}>
+                          {d.is_active ? <><CheckCircle2 size={11} /> Active</> : <><CircleOff size={11} /> Inactive</>}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button onClick={() => del(d.id)} className="inline-flex items-center gap-1 text-[10px] hover:opacity-70 transition" style={{ color: '#f87171' }}>
+                          <Trash2 size={12} /> Delete
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
-    </div>
+      </Card>
+    </PageShell>
   )
 }

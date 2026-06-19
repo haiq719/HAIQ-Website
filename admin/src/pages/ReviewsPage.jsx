@@ -1,25 +1,17 @@
 // ReviewsPage.jsx
 import { useEffect, useState } from 'react'
 import adminApi from '../services/adminApi'
-import { Star, Check } from 'lucide-react'
-
-const STATUS_STYLE = {
-  pending:  { label: 'Pending',  bg: 'bg-yellow-500/15', text: 'text-yellow-400' },
-  approved: { label: 'Approved', bg: 'bg-green-500/15',  text: 'text-green-400'  },
-  rejected: { label: 'Rejected', bg: 'bg-red-500/15',    text: 'text-red-400'    },
-}
+import { Star, Check, X, MessageSquareQuote, BadgeCheck } from 'lucide-react'
+import { PageShell, PageHeader, Card, Pill, EmptyState, Skeleton } from '../components/shared/ui'
+import StatusBadge from '../components/shared/StatusBadge'
 
 function Stars({ rating }) {
   return (
     <div className="flex gap-0.5">
       {Array(5).fill(null).map((_, i) => (
-        <Star
-          key={i}
-          size={14}
-          strokeWidth={1.5}
+        <Star key={i} size={14} strokeWidth={1.5}
           fill={i < rating ? '#B8752A' : 'none'}
-          color={i < rating ? '#B8752A' : '#8C7355'}
-        />
+          color={i < rating ? '#B8752A' : '#8C7355'} />
       ))}
     </div>
   )
@@ -50,106 +42,89 @@ export default function ReviewsPage() {
     finally { setUpdating(null) }
   }
 
-  const visible  = filter === 'all' ? reviews : reviews.filter(r => r.status === filter)
-  const pending  = reviews.filter(r => r.status === 'pending').length
+  const visible = filter === 'all' ? reviews : reviews.filter(r => r.status === filter)
+  const pending = reviews.filter(r => r.status === 'pending').length
+  const TABS = ['pending', 'approved', 'rejected', 'all']
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-primary text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">Manage</p>
-        <h1 className="font-serif font-bold text-light text-3xl">Reviews</h1>
-      </div>
+    <PageShell deps={[loading]} max="1000px">
+      <PageHeader label="Manage" title="Reviews" icon={MessageSquareQuote} />
 
       {pending > 0 && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-5 py-3 flex items-center gap-3">
-          <Star className="text-yellow-400" size={20} strokeWidth={1.5} fill="#FACC15" />
-          <p className="text-yellow-300 text-sm">
+        <Card className="!py-3 flex items-center gap-3"
+          style={{ background: 'rgba(232,200,138,0.08)', borderColor: 'rgba(232,200,138,0.3)' }}>
+          <Star size={18} strokeWidth={1.5} fill="#E8C88A" color="#E8C88A" className="flex-shrink-0" />
+          <p className="text-sm" style={{ color: '#E8C88A' }}>
             <strong>{pending}</strong> review{pending > 1 ? 's' : ''} awaiting moderation.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* Filter tabs */}
       <div className="flex flex-wrap gap-2">
-        {['pending', 'approved', 'rejected', 'all'].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full transition-colors ${
-              filter === f
-                ? 'bg-primary text-dark'
-                : 'border border-border text-light/40 hover:text-light'
-            }`}
-          >
-            {f === 'all' ? 'All' : STATUS_STYLE[f]?.label}
-            {f === 'pending' && pending > 0 && (
-              <span className="ml-2 bg-yellow-400 text-dark rounded-full px-1.5 py-0.5 text-[9px]">
-                {pending}
-              </span>
-            )}
-          </button>
-        ))}
+        {TABS.map(f => {
+          const active = filter === f
+          return (
+            <button key={f} onClick={() => setFilter(f)}
+              className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full transition-all flex items-center gap-2"
+              style={active
+                ? { background: '#B8752A', color: '#1A0A00' }
+                : { border: '1px solid #3D2000', color: 'rgba(242,234,216,0.45)' }}>
+              {f === 'all' ? 'All' : f}
+              {f === 'pending' && pending > 0 && (
+                <span className="rounded-full px-1.5 py-0.5 text-[9px]"
+                  style={{ background: active ? '#1A0A00' : '#E8C88A', color: active ? '#E8C88A' : '#1A0A00' }}>
+                  {pending}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Reviews list */}
+      {/* List */}
       <div className="space-y-4">
-        {loading ? Array(4).fill(null).map((_, i) => (
-          <div key={i} className="h-24 skeleton-dark rounded-lg" />
-        )) : visible.length === 0 ? (
-          <div className="admin-card text-center text-light/30 py-10 text-sm">
-            No reviews in this category.
-          </div>
-        ) : visible.map(review => {
-          const st = STATUS_STYLE[review.status] || STATUS_STYLE.pending
-          return (
-            <div key={review.id} className="admin-card">
+        {loading ? Array(4).fill(null).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)
+          : visible.length === 0 ? (
+            <Card><EmptyState icon={MessageSquareQuote} title="No reviews here" sub="Nothing in this category yet." /></Card>
+          ) : visible.map(review => (
+            <Card key={review.id}>
               <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-light font-semibold">{review.name}</p>
+                    <p className="font-semibold" style={{ color: '#F2EAD8' }}>{review.name}</p>
                     <Stars rating={review.rating} />
-                    <span className={`status-badge ${st.bg} ${st.text}`}>{st.label}</span>
-                    {review.verified_purchase && (
-                      <span className="status-badge bg-primary/15 text-primary flex items-center gap-1">
-                        <Check size={12} strokeWidth={1.5} /> Verified
-                      </span>
-                    )}
+                    <StatusBadge status={review.status} />
+                    {review.verified_purchase && <Pill color="#B8752A" icon={BadgeCheck}>Verified</Pill>}
                   </div>
-                  <p className="text-primary/60 text-xs uppercase tracking-wider">
+                  <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(184,117,42,0.7)' }}>
                     {review.product_name}
                   </p>
-                  <p className="text-light/60 text-sm leading-relaxed">"{review.comment}"</p>
-                  <p className="text-light/20 text-xs">
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(242,234,216,0.65)' }}>"{review.comment}"</p>
+                  <p className="text-xs" style={{ color: 'rgba(242,234,216,0.25)' }}>
                     {new Date(review.created_at).toLocaleDateString('en-UG', { timeZone: 'Africa/Kampala' })}
                   </p>
                 </div>
 
-                {/* Actions */}
                 <div className="flex flex-col gap-2 flex-shrink-0">
                   {review.status !== 'approved' && (
-                    <button
-                      onClick={() => updateReview(review.id, 'approved')}
-                      disabled={updating === review.id}
-                      className="admin-btn-primary px-4 py-1.5 text-[10px]"
-                    >
-                      Approve
+                    <button onClick={() => updateReview(review.id, 'approved')} disabled={updating === review.id}
+                      className="admin-btn-primary px-4 py-1.5 text-[10px] disabled:opacity-40">
+                      <Check size={12} /> Approve
                     </button>
                   )}
                   {review.status !== 'rejected' && (
-                    <button
-                      onClick={() => updateReview(review.id, 'rejected')}
-                      disabled={updating === review.id}
-                      className="border border-red-500/40 text-red-400 hover:bg-red-500/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded transition-colors"
-                    >
-                      Reject
+                    <button onClick={() => updateReview(review.id, 'rejected')} disabled={updating === review.id}
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors disabled:opacity-40"
+                      style={{ border: '1px solid rgba(248,113,113,0.4)', color: '#f87171' }}>
+                      <X size={12} /> Reject
                     </button>
                   )}
                 </div>
               </div>
-            </div>
-          )
-        })}
+            </Card>
+          ))}
       </div>
-    </div>
+    </PageShell>
   )
 }

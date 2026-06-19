@@ -90,11 +90,11 @@ export default function AdminLayout({ children }) {
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
           {NAV.map(item => (
             <NavLink key={item.to} to={item.to}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all"
               style={({ isActive }) => ({
-                background:  isActive ? 'rgba(232,200,138,0.08)' : 'transparent',
-                borderLeft:  isActive ? '2px solid #E8C88A'      : '2px solid transparent',
-                color:       isActive ? '#E8C88A'                 : 'rgba(242,234,216,0.45)',
+                background:  isActive ? 'rgba(232,200,138,0.1)' : 'transparent',
+                color:       isActive ? '#E8C88A'              : 'rgba(242,234,216,0.5)',
+                boxShadow:   isActive ? 'inset 2px 0 0 #E8C88A' : 'none',
                 textDecoration: 'none',
               })}>
               <item.Icon size={16} strokeWidth={1.5} className="flex-shrink-0" />
@@ -183,11 +183,11 @@ export default function AdminLayout({ children }) {
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
               {NAV.map(item => (
                 <NavLink key={item.to} to={item.to} onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 text-sm font-medium"
+                  className="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg"
                   style={({ isActive }) => ({
-                    background:  isActive ? 'rgba(232,200,138,0.08)' : 'transparent',
-                    borderLeft:  isActive ? '2px solid #E8C88A'      : '2px solid transparent',
-                    color:       isActive ? '#E8C88A'                 : 'rgba(242,234,216,0.5)',
+                    background:  isActive ? 'rgba(232,200,138,0.1)' : 'transparent',
+                    color:       isActive ? '#E8C88A'              : 'rgba(242,234,216,0.5)',
+                    boxShadow:   isActive ? 'inset 2px 0 0 #E8C88A' : 'none',
                     textDecoration: 'none',
                   })}>
                   <item.Icon size={16} strokeWidth={1.5} />

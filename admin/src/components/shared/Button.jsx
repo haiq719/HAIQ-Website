@@ -15,7 +15,7 @@ export default function Button({
 
   const base = clsx(
     isFullWidth ? 'flex' : 'inline-flex',
-    'items-center justify-center font-bold uppercase tracking-wide transition-all duration-200',
+    'items-center justify-center gap-1.5 rounded-lg font-bold uppercase tracking-wide transition-all duration-200',
     'disabled:opacity-40 disabled:cursor-not-allowed',
     loading && 'cursor-wait'
   )
