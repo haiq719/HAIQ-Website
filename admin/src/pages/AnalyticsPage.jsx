@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react'
 import adminApi from '../services/adminApi'
 import { useEntrance, useCountUp } from '../lib/anim'
+import { PageHeader } from '../components/shared/ui'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend, AreaChart, Area,
 } from 'recharts'
 import {
   BarChart3, MapPin, Gift, Users, Trophy, Package, TrendingUp, AlertCircle, CalendarDays,
+  ArrowUp, ArrowDown, ChevronDown,
 } from 'lucide-react'
 
 // Local product images (mirrors the storefront) — fallback when the DB has no image URL
@@ -154,8 +156,8 @@ function KPICard({ label, value, change, icon }) {
       </div>
       <p className="font-serif font-bold text-light text-2xl mb-2 tabular-nums">{fmt(Math.round(display))}</p>
       {change !== null && (
-        <p className={`text-xs font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-          {isPositive ? '↑' : '↓'} {Math.abs(change)}% vs last week
+        <p className={`text-xs font-medium flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+          {isPositive ? <ArrowUp size={12} /> : <ArrowDown size={12} />} {Math.abs(change)}% vs last week
         </p>
       )}
     </div>
@@ -403,6 +405,7 @@ export default function AnalyticsPage() {
 
   if (loading) return (
     <div className="space-y-6">
+      <PageHeader label="Insights" title="Analytics" icon={BarChart3} />
       {Array(3).fill(null).map((_, i) => (
         <div key={i} className="h-48 skeleton rounded-lg" style={{ background: '#3D2000' }} />
       ))}
@@ -413,10 +416,7 @@ export default function AnalyticsPage() {
     <div ref={containerRef} className="space-y-10">
 
       {/* Page header */}
-      <div>
-        <p className="text-primary text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">Insights</p>
-        <h1 className="font-serif font-bold text-light text-3xl">Analytics</h1>
-      </div>
+      <PageHeader label="Insights" title="Analytics" icon={BarChart3} />
 
       {/* ── Insights Panel ───────────────────────────────────────────────────── */}
       {insights.length > 0 && (
@@ -793,9 +793,7 @@ export default function AnalyticsPage() {
             <p className="text-primary text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">Detailed</p>
             <h2 className="font-serif font-bold text-light text-xl">Zone Breakdown</h2>
           </div>
-          <span className="text-xl" style={{ transform: expandedAccordion ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms' }}>
-            ▼
-          </span>
+          <ChevronDown size={20} style={{ color: '#B8752A', transform: expandedAccordion ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms' }} />
         </button>
 
         {expandedAccordion && zones.length > 0 && (
