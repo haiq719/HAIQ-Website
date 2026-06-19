@@ -3,81 +3,94 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://haiq.ug/</loc>
+    <loc>https://haiq-frontend.vercel.app/</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Shop -->
   <url>
-    <loc>https://haiq.ug/shop</loc>
+    <loc>https://haiq-frontend.vercel.app/shop</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Build Your Box -->
   <url>
-    <loc>https://haiq.ug/build-your-box</loc>
+    <loc>https://haiq-frontend.vercel.app/build-your-box</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Product pages -->
   <url>
-    <loc>https://haiq.ug/products/venom</loc>
+    <loc>https://haiq-frontend.vercel.app/products/venom</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://haiq.ug/products/coconut</loc>
+    <loc>https://haiq-frontend.vercel.app/products/coconut</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://haiq.ug/products/crimson-sin</loc>
+    <loc>https://haiq-frontend.vercel.app/products/crimson-sin</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://haiq.ug/products/campfire-after-dark</loc>
+    <loc>https://haiq-frontend.vercel.app/products/campfire-after-dark</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://haiq.ug/products/blackout</loc>
+    <loc>https://haiq-frontend.vercel.app/products/blackout</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Moments -->
   <url>
-    <loc>https://haiq.ug/moments</loc>
+    <loc>https://haiq-frontend.vercel.app/moments</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <!-- FAQ -->
   <url>
-    <loc>https://haiq.ug/faq</loc>
+    <loc>https://haiq-frontend.vercel.app/faq</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Contact -->
   <url>
-    <loc>https://haiq.ug/contact</loc>
+    <loc>https://haiq-frontend.vercel.app/contact</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <!-- Legal -->
   <url>
-    <loc>https://haiq.ug/privacy</loc>
+    <loc>https://haiq-frontend.vercel.app/privacy</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://haiq.ug/terms</loc>
+    <loc>https://haiq-frontend.vercel.app/terms</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

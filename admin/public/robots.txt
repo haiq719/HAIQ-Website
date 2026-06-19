@@ -1,0 +1,3 @@
+# HAIQ Admin is a private staff tool — block all crawlers entirely.
+User-agent: *
+Disallow: /

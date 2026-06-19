@@ -2,9 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HAIQ Bakery – Uganda's Boldest Cookies</title>
+
+    <!-- ── Static SEO fallback (react-helmet overrides these per-route at runtime,
+         but this guarantees a complete head for crawlers that don't execute JS) ── -->
+    <meta name="description" content="HAIQ Bakery — premium handcrafted cookies baked fresh every morning in Muyenga, Kampala. Venom, Blackout, Crimson Sin, Campfire After Dark, Coconut. Order now." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="HAIQ Bakery" />
+    <link rel="canonical" href="https://haiq-frontend.vercel.app/" />
+    <meta name="theme-color" content="#1A0A00" />
+
+    <!-- ── Icons & PWA ── -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/HAIQ192.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- ── Open Graph fallback ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HAIQ Bakery" />
+    <meta property="og:title" content="HAIQ Bakery — Made For You" />
+    <meta property="og:description" content="Premium handcrafted cookies baked fresh every morning in Kampala, Uganda." />
+    <meta property="og:image" content="https://haiq-frontend.vercel.app/HAIQmain.png" />
+    <meta property="og:url" content="https://haiq-frontend.vercel.app/" />
+    <meta property="og:locale" content="en_UG" />
+
+    <!-- ── Twitter / X fallback ── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HAIQ Bakery — Made For You" />
+    <meta name="twitter:description" content="Premium handcrafted cookies baked fresh every morning in Kampala, Uganda." />
+    <meta name="twitter:image" content="https://haiq-frontend.vercel.app/HAIQmain.png" />
 
     <!-- ── DNS prefetch for external resources ─────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

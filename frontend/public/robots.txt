@@ -11,4 +11,4 @@ Disallow: /reset-password
 Disallow: /forgot-password
 
 # Sitemap location
-Sitemap: https://haiq.ug/sitemap.xml
+Sitemap: https://haiq-frontend.vercel.app/sitemap.xml

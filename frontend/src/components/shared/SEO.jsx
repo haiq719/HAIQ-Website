@@ -11,7 +11,13 @@
  */
 import { Helmet } from 'react-helmet-async'
 
-const SITE_URL  = 'https://haiq.ug'
+// Self-referencing canonical: uses the live origin so it always points at the
+// domain actually serving the page. Auto-switches the moment a custom domain
+// (e.g. haiq.ug) is connected — no code change needed. Falls back to the current
+// Vercel deployment for any non-browser (SSR/build) context.
+const SITE_URL  = typeof window !== 'undefined'
+  ? window.location.origin
+  : 'https://haiq-frontend.vercel.app'
 const SITE_NAME = 'HAIQ Bakery'
 const SITE_DESC = 'Premium handcrafted cookies baked fresh every morning in Kampala, Uganda. Made For You.'
 const DEFAULT_IMAGE = `${SITE_URL}/HAIQmain.png`
