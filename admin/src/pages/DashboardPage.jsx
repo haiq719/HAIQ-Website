@@ -168,7 +168,7 @@ export default function DashboardPage() {
                       <p className="text-xs font-medium" style={{ color: '#F2EAD8' }}>{c.full_name || `${c.first_name} ${c.last_name}`}</p>
                       <p className="text-[10px] truncate max-w-[120px]" style={{ color: '#8C7355' }}>{c.email}</p>
                     </td>
-                    <td className="px-3 md:px-4 py-3 text-xs tabular-nums" style={{ color: '#F2EAD8' }}>{c.order_count}</td>
+                    <td className="px-3 md:px-4 py-3 text-xs tabular-nums" style={{ color: '#F2EAD8' }}>{c.total_orders}</td>
                     <td className="px-3 md:px-4 py-3 text-xs font-medium tabular-nums" style={{ color: '#E8C88A' }}>UGX {fmt(c.total_spent)}</td>
                   </tr>
                 ))}

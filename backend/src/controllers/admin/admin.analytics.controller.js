@@ -38,7 +38,9 @@ const summary = async (req, res, next) => {
         AND created_at <  date_trunc('week', NOW())
     `);
 
-    // Last 7 days revenue, one row per day (for dashboard sparkline)
+    // Last 7 days revenue, one row per day (for dashboard sparkline).
+    // Includes all non-cancelled orders (not just payment_status='paid') so
+    // COD-heavy businesses see real activity — COD only flips to 'paid' on delivery.
     const last7 = await query(`
       SELECT
         d::date AS day,
@@ -50,7 +52,7 @@ const summary = async (req, res, next) => {
       ) AS d
       LEFT JOIN orders o
         ON DATE(o.created_at AT TIME ZONE 'Africa/Kampala') = d::date
-        AND o.payment_status = 'paid'
+        AND o.status != 'cancelled'
       GROUP BY d::date
       ORDER BY d::date ASC
     `);
