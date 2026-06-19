@@ -82,6 +82,23 @@ router.patch('/:id', requireStaff, async (req, res, next) => {
 
     await query(`UPDATE loyalty_cards SET ${allSet} WHERE id = $1`, values);
 
+    // Keep the customer's loyalty tier in sync with their card status.
+    // Approved/dispatched/delivered → member ("Reserve"); rejected → "Classic".
+    // Premium members ("Crown") are never downgraded automatically.
+    if (['approve', 'dispatch', 'deliver'].includes(action)) {
+      await query(
+        `UPDATE users SET loyalty_tier = 'Reserve'
+         WHERE id = $1 AND loyalty_tier IS DISTINCT FROM 'Crown'`,
+        [card.user_id]
+      );
+    } else if (action === 'reject') {
+      await query(
+        `UPDATE users SET loyalty_tier = 'Classic'
+         WHERE id = $1 AND loyalty_tier IS DISTINCT FROM 'Crown'`,
+        [card.user_id]
+      );
+    }
+
     // Send email notification (non-blocking)
     const name = card.full_name?.split(' ')[0] || 'there';
     if (action === 'approve') {

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import Crown from '../shared/Crown'
 
 const MOMENTS = [
@@ -101,7 +102,7 @@ export default function MomentsSection() {
               to="/moments"
               className="hidden md:flex items-center gap-2 text-primary text-[11px] font-semibold tracking-[0.25em] uppercase hover:text-secondary transition-colors flex-shrink-0 mb-2"
             >
-              See All <span>→</span>
+              See All <ArrowRight size={13} />
             </Link>
           </div>
         </div>
@@ -134,9 +135,9 @@ export default function MomentsSection() {
         <div className="mt-8 md:hidden text-center">
           <Link
             to="/moments"
-            className="text-primary text-[11px] font-semibold tracking-[0.25em] uppercase hover:text-secondary transition-colors"
+            className="inline-flex items-center gap-1.5 text-primary text-[11px] font-semibold tracking-[0.25em] uppercase hover:text-secondary transition-colors"
           >
-            See All Moments →
+            See All Moments <ArrowRight size={13} />
           </Link>
         </div>
       </div>

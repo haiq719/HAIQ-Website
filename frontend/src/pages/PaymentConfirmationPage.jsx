@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../services/api'
-import { CheckCircle, AlertTriangle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, ListOrdered } from 'lucide-react'
 
 const PAYMENT_METHODS = {
   mtn_momo: {
@@ -232,7 +232,7 @@ export default function PaymentConfirmationPage() {
 
         {/* Help section */}
         <div className="p-4 rounded" style={{ background: 'rgba(184,117,42,0.07)', border: '1px solid rgba(184,117,42,0.2)' }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: '#B8752A' }}>📝 Steps</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5" style={{ color: '#B8752A' }}><ListOrdered size={12} /> Steps</p>
           <ol className="text-[10px] space-y-1" style={{ color: '#8C7355', listStyleType: 'decimal', marginLeft: '20px' }}>
             <li>Dial {config.ussd}</li>
             <li>Enter merchant code: {config.merchantCode}</li>

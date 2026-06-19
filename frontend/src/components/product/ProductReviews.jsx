@@ -3,28 +3,33 @@ import { Link } from 'react-router-dom'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../shared/Button'
-import { Star, CheckCircle } from 'lucide-react'
+import { Star, CheckCircle, BadgeCheck } from 'lucide-react'
 
 // ── Star Rating ───────────────────────────────────────────────────────────────
 function StarRating({ value, onChange, readonly = false, size = 'md' }) {
   const [hover, setHover] = useState(0)
-  const sz = size === 'lg' ? 'text-2xl' : 'text-base'
+  const px = size === 'lg' ? 24 : size === 'sm' ? 14 : 18
 
   return (
     <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map(star => (
-        <button
-          key={star}
-          type="button"
-          disabled={readonly}
-          onClick={() => onChange?.(star)}
-          onMouseEnter={() => !readonly && setHover(star)}
-          onMouseLeave={() => !readonly && setHover(0)}
-          className={`${sz} transition-transform ${!readonly ? 'cursor-pointer hover:scale-110' : 'cursor-default'}`}
-        >
-          <span style={{ color: (hover || value) >= star ? '#B8752A' : 'rgba(184,117,42,0.2)' }}>★</span>
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map(star => {
+        const active = (hover || value) >= star
+        return (
+          <button
+            key={star}
+            type="button"
+            disabled={readonly}
+            onClick={() => onChange?.(star)}
+            onMouseEnter={() => !readonly && setHover(star)}
+            onMouseLeave={() => !readonly && setHover(0)}
+            className={`transition-transform ${!readonly ? 'cursor-pointer hover:scale-110' : 'cursor-default'}`}
+          >
+            <Star size={px} strokeWidth={1.5}
+              fill={active ? '#B8752A' : 'none'}
+              color={active ? '#B8752A' : 'rgba(184,117,42,0.35)'} />
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -35,11 +40,11 @@ function ReviewCard({ review }) {
     <div className="py-5" style={{ borderBottom: '1px solid rgba(184,117,42,0.15)' }}>
       <div className="flex items-start justify-between mb-2 gap-4">
         <div>
-          <p className="font-semibold text-sm" style={{ color: '#F2EAD8' }}>{review.name}</p>
+          <p className="font-semibold text-sm" style={{ color: '#1A0A00' }}>{review.name}</p>
           {review.verified_purchase && (
-            <span className="text-[10px] font-medium px-2 py-0.5"
-              style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80' }}>
-              ✓ Verified Purchase
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 mt-1"
+              style={{ background: 'rgba(74,222,128,0.12)', color: '#2f9e54' }}>
+              <BadgeCheck size={11} strokeWidth={2} /> Verified Purchase
             </span>
           )}
         </div>
@@ -52,7 +57,7 @@ function ReviewCard({ review }) {
           </span>
         </div>
       </div>
-      <p className="text-sm leading-relaxed" style={{ color: 'rgba(242,234,216,0.55)' }}>
+      <p className="text-sm leading-relaxed" style={{ color: 'rgba(26,10,0,0.72)' }}>
         {review.comment}
       </p>
     </div>

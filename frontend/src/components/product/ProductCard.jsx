@@ -3,6 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useState, useRef, useEffect } from 'react';
 import VariantPickerModal from './VariantPickerModal';
 import Button from '../shared/Button';
+import { Check, ArrowRight } from 'lucide-react';
 
 const LOGO_FALLBACK = '/HAIQmain.png';
 
@@ -157,11 +158,11 @@ export default function ProductCard({ product, index = 0 }) {
                 {isSoldOut
                   ? 'Sold Out'
                   : added
-                    ? '✓ Added'
+                    ? <span className="inline-flex items-center gap-1.5"><Check size={15} strokeWidth={2.5} /> Added</span>
                     : product.is_box_item
-                      ? 'Build Your Box →'
+                      ? <span className="inline-flex items-center gap-1.5">Build Your Box <ArrowRight size={14} /></span>
                       : hasMultiple
-                        ? 'Choose Size →'
+                        ? <span className="inline-flex items-center gap-1.5">Choose Size <ArrowRight size={14} /></span>
                         : 'Add to Cart'
                 }
               </Button>

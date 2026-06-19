@@ -37,7 +37,7 @@ const ORG_SCHEMA = {
   },
   sameAs: [
     'https://instagram.com/haiq_ug',
-    'https://facebook.com/Haiqafrica',
+    'https://www.tiktok.com/@haiq_africa',
   ],
   servesCuisine: 'Bakery',
   priceRange: 'UGX 5,000 – UGX 80,000',

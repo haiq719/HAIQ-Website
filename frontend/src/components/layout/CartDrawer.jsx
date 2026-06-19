@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import Button from '../shared/Button'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, X, ArrowRight, ChevronDown, Minus, Plus } from 'lucide-react'
 
 // ── Box item — single row with collapsible cookie list ────────────────────────
 function BoxCartItem({ item, onRemove }) {
@@ -56,10 +56,10 @@ function BoxCartItem({ item, onRemove }) {
                 {expanded ? 'Hide contents' : 'See what\'s inside'}
               </span>
               <span
-                className="text-xs transition-transform duration-200"
+                className="transition-transform duration-200 inline-flex"
                 style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
-                ▾
+                <ChevronDown size={14} />
               </span>
             </button>
           )}
@@ -90,7 +90,7 @@ function BoxCartItem({ item, onRemove }) {
           className="text-xs flex-shrink-0 self-start mt-0.5 hover:opacity-60 transition-opacity"
           style={{ color: '#8C7355' }}
           aria-label={`Remove ${item.name}`}
-        >✕</button>
+        ><X size={15} strokeWidth={1.5} /></button>
       </div>
     </div>
   )
@@ -126,17 +126,19 @@ function SingleCartItem({ item, onRemove, onQtyChange }) {
           <button
             onClick={() => onQtyChange(item, item.quantity - 1)}
             disabled={item.quantity <= 1}
-            className="w-5 h-5 flex items-center justify-center text-xs transition disabled:opacity-30"
+            className="w-5 h-5 flex items-center justify-center transition disabled:opacity-30"
             style={{ border: '1px solid rgba(184,117,42,0.3)', color: '#F2EAD8' }}
-          >−</button>
+            aria-label="Decrease quantity"
+          ><Minus size={12} /></button>
           <span className="text-xs font-medium w-4 text-center tabular-nums" style={{ color: '#F2EAD8' }}>
             {item.quantity}
           </span>
           <button
             onClick={() => onQtyChange(item, item.quantity + 1)}
-            className="w-5 h-5 flex items-center justify-center text-xs transition"
+            className="w-5 h-5 flex items-center justify-center transition"
             style={{ border: '1px solid rgba(184,117,42,0.3)', color: '#F2EAD8' }}
-          >+</button>
+            aria-label="Increase quantity"
+          ><Plus size={12} /></button>
         </div>
       </div>
 
@@ -145,7 +147,7 @@ function SingleCartItem({ item, onRemove, onQtyChange }) {
         className="text-xs flex-shrink-0 self-start mt-0.5 hover:opacity-60 transition-opacity"
         style={{ color: '#8C7355' }}
         aria-label={`Remove ${item.name}`}
-      >✕</button>
+      ><X size={15} strokeWidth={1.5} /></button>
     </div>
   )
 }
@@ -198,7 +200,7 @@ export default function CartDrawer({ isOpen, onClose }) {
             className="text-xl leading-none transition hover:opacity-50"
             style={{ color: '#8C7355' }}
             aria-label="Close cart"
-          >✕</button>
+          ><X size={15} strokeWidth={1.5} /></button>
         </div>
 
         {/* Items */}
@@ -208,9 +210,9 @@ export default function CartDrawer({ isOpen, onClose }) {
               <ShoppingBag size={36} style={{ color: 'rgba(184,117,42,0.35)' }} className="mb-4" />
               <p className="font-serif font-bold text-lg mb-1" style={{ color: '#F2EAD8' }}>Your cart is empty</p>
               <p className="text-sm mb-6" style={{ color: '#8C7355' }}>Add something delicious.</p>
-              <button onClick={onClose} className="text-[11px] font-semibold tracking-[0.2em] uppercase hover:opacity-70 transition"
+              <button onClick={onClose} className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.2em] uppercase hover:opacity-70 transition"
                 style={{ color: '#B8752A' }}>
-                Continue Shopping →
+                Continue Shopping <ArrowRight size={13} />
               </button>
             </div>
           ) : (

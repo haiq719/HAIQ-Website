@@ -10,7 +10,7 @@ import RelatedProducts from '../components/product/RelatedProducts'
 import ProductReviews from '../components/product/ProductReviews'
 import { ProductSEO } from '../components/shared/SEO'
 import Button from '../components/shared/Button'
-import { Package, UtensilsCrossed, MessageCircle, Lock } from 'lucide-react'
+import { Package, UtensilsCrossed, MessageCircle, Lock, AlertTriangle, Check } from 'lucide-react'
 
 export default function ProductDetailPage() {
   const { slug }   = useParams()
@@ -51,6 +51,7 @@ export default function ProductDetailPage() {
   const stockQty  = selectedVariant?.stock_qty ?? 0
   const isSoldOut = stockQty === 0
   const isLow     = stockQty > 0 && stockQty <= 3
+  const isDrink   = product?.category?.slug === 'drinks'
 
   // ── Loading skeleton ─────────────────────────────────────────
   if (loading) {
@@ -162,8 +163,8 @@ export default function ProductDetailPage() {
 
             {/* Low stock */}
             {isLow && (
-              <p className="text-sm text-amber-600 font-medium mb-3">
-                ⚠ Only {stockQty} left in stock
+              <p className="text-sm text-amber-600 font-medium mb-3 flex items-center gap-1.5">
+                <AlertTriangle size={14} /> Only {stockQty} left in stock
               </p>
             )}
 
@@ -175,7 +176,7 @@ export default function ProductDetailPage() {
               className={`w-full rounded-2xl mb-4 text-base ${added ? 'bg-green-500 text-white hover:bg-green-500' : ''}`}
               size="lg"
             >
-              {isSoldOut ? 'Sold Out' : added ? '✓ Added to Cart' : `Add to Cart — UGX ${Number(selectedVariant?.price ?? product.base_price).toLocaleString()}`}
+              {isSoldOut ? 'Sold Out' : added ? <span className="inline-flex items-center gap-1.5"><Check size={18} strokeWidth={2.5} /> Added to Cart</span> : `Add to Cart — UGX ${Number(selectedVariant?.price ?? product.base_price).toLocaleString()}`}
             </Button>
 
             {/* Tasting notes */}
@@ -190,14 +191,14 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* What's in the box */}
-            <ItemListAccordion items={product.items} />
+            {/* What's in the box / Ingredients */}
+            <ItemListAccordion items={product.items} title={isDrink ? 'Ingredients' : "What's in the box"} />
 
             {/* Trust signals */}
             <div className="mt-6 pt-5 border-t border-gray-100 grid grid-cols-2 gap-3">
               {[
                 [Package,          'Same-day delivery in Kampala'],
-                [UtensilsCrossed,  'Baked fresh daily'],
+                [UtensilsCrossed,  isDrink ? 'Crafted fresh daily' : 'Baked fresh daily'],
                 [MessageCircle,    'WhatsApp order updates'],
                 [Lock,             'Secure checkout'],
               ].map(([Icon, text]) => (

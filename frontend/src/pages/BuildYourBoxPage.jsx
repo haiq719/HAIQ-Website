@@ -5,6 +5,7 @@ import Crown from '../components/shared/Crown'
 import Button from '../components/shared/Button'
 import { BuildYourBoxSEO } from '../components/shared/SEO'
 import TimeWarning from '../components/TimeWarning'
+import { Check, AlertTriangle } from 'lucide-react'
 import {
   getServerTime,
   getClientTime,
@@ -225,7 +226,7 @@ export default function BuildYourBoxPage() {
                   cursor: !isFull ? 'not-allowed' : 'pointer',
                   border: 'none',
                 }}>
-                {confirmed ? '✓ Added to Cart' : 'Add to Cart'}
+                {confirmed ? <span className="inline-flex items-center gap-1.5"><Check size={16} strokeWidth={2.5} /> Added to Cart</span> : 'Add to Cart'}
               </button>
             )}
           </div>
@@ -270,7 +271,7 @@ export default function BuildYourBoxPage() {
 
         {error && !loading ? (
           <div className="text-center py-16">
-            <p className="font-serif font-bold text-xl mb-2" style={{ color: '#F2EAD8' }}>⚠️ Couldn't Load Options</p>
+            <p className="font-serif font-bold text-xl mb-2 flex items-center justify-center gap-2" style={{ color: '#F2EAD8' }}><AlertTriangle size={20} /> Couldn't Load Options</p>
             <p className="text-sm mb-6" style={{ color: '#8C7355' }}>{error}</p>
             <button onClick={() => window.location.reload()} className="font-bold text-[11px] tracking-[0.2em] uppercase px-8 py-3"
               style={{ background: '#B8752A', color: '#1A0A00' }}>

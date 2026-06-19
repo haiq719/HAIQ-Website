@@ -4,7 +4,7 @@ import api from '../services/api'
 import { useCart } from '../context/CartContext'
 import Crown from '../components/shared/Crown'
 import { ShopSEO } from '../components/shared/SEO'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Check, ArrowRight } from 'lucide-react'
 
 function ProductCard({ product }) {
   const { addItem, openDrawer } = useCart()
@@ -98,7 +98,7 @@ function ProductCard({ product }) {
               transition: 'all 0.2s',
             }}
           >
-            {adding ? '✓ Added' : 'Add to Cart'}
+            {adding ? <span className="inline-flex items-center gap-1.5"><Check size={13} strokeWidth={2.5} /> Added</span> : 'Add to Cart'}
           </button>
         </div>
       </div>
@@ -219,10 +219,10 @@ export default function ShopPage() {
             </p>
             <Link
               to="/build-your-box"
-              className="inline-block font-bold text-[11px] tracking-[0.28em] uppercase px-10 py-4 transition-all hover:opacity-90"
+              className="inline-flex items-center gap-2 font-bold text-[11px] tracking-[0.28em] uppercase px-10 py-4 transition-all hover:opacity-90"
               style={{ background: '#B8752A', color: '#1A0A00' }}
             >
-              Start Building →
+              Start Building <ArrowRight size={15} />
             </Link>
           </div>
         )}

@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify'
 import api from '../services/api'
 import Button from '../components/shared/Button'
 import { ContactSEO } from '../components/shared/SEO'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, ArrowRight } from 'lucide-react'
 
 // SVG Icons
 const PhoneIcon = () => (
@@ -31,12 +31,6 @@ const InstagramIcon = () => (
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
     <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
     <circle cx="17.5" cy="6.5" r="1.5"/>
-  </svg>
-)
-
-const FacebookIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 2h-3a6 6 0 00-6 6v3H7v4h2v8h4v-8h3l1-4h-4V8a1 1 0 011-1h3z"/>
   </svg>
 )
 
@@ -84,15 +78,9 @@ const SOCIAL_ITEMS = [
     icon: InstagramIcon,
   },
   {
-    platform: 'Facebook',
-    handle: 'Haiqafrica',
-    url: 'https://facebook.com/Haiqafrica',
-    icon: FacebookIcon,
-  },
-  {
     platform: 'TikTok',
-    handle: 'Haiqafrica',
-    url: 'https://tiktok.com/@Haiqafrica',
+    handle: '@haiq_africa',
+    url: 'https://www.tiktok.com/@haiq_africa',
     icon: TikTokIcon,
   },
   {
@@ -189,9 +177,9 @@ export default function ContactPage() {
                       href={item.link}
                       target={item.link.startsWith('http') ? '_blank' : undefined}
                       rel="noreferrer"
-                      className="text-sm text-gray-400 hover:text-primary transition mt-0.5 inline-block"
+                      className="text-sm text-gray-400 hover:text-primary transition mt-0.5 inline-flex items-center gap-1"
                     >
-                      {item.linkLabel} →
+                      {item.linkLabel} <ArrowRight size={13} />
                     </a>
                   </div>
                 </div>

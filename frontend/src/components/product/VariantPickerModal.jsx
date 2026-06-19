@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../../context/CartContext'
+import { X, Minus, Plus, Check } from 'lucide-react'
 
 export default function VariantPickerModal({ product, onClose }) {
   const [selectedVariant, setSelectedVariant] = useState(null)
@@ -69,10 +70,10 @@ export default function VariantPickerModal({ product, onClose }) {
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-dark transition text-xl leading-none ml-2 flex-shrink-0"
+              className="text-gray-400 hover:text-dark transition ml-2 flex-shrink-0"
               aria-label="Close"
             >
-              ✕
+              <X size={20} strokeWidth={1.5} />
             </button>
           </div>
 
@@ -126,16 +127,18 @@ export default function VariantPickerModal({ product, onClose }) {
                   onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
                   className="w-10 h-10 flex items-center justify-center text-dark hover:bg-gray-100 transition disabled:text-gray-300"
+                  aria-label="Decrease quantity"
                 >
-                  −
+                  <Minus size={15} />
                 </button>
                 <span className="w-10 text-center font-medium text-dark text-sm">{quantity}</span>
                 <button
                   onClick={() => setQuantity(q => Math.min(maxQty, q + 1))}
                   disabled={quantity >= maxQty}
                   className="w-10 h-10 flex items-center justify-center text-dark hover:bg-gray-100 transition disabled:text-gray-300"
+                  aria-label="Increase quantity"
                 >
-                  +
+                  <Plus size={15} />
                 </button>
               </div>
               {selectedVariant?.stock_qty <= 3 && selectedVariant?.stock_qty > 0 && (
@@ -163,7 +166,7 @@ export default function VariantPickerModal({ product, onClose }) {
             {isSoldOut
               ? 'Sold Out'
               : added
-                ? '✓ Added to Cart!'
+                ? <span className="inline-flex items-center gap-1.5"><Check size={18} strokeWidth={2.5} /> Added to Cart!</span>
                 : `Add to Cart — UGX ${Number((selectedVariant?.price ?? product.base_price) * quantity).toLocaleString()}`
             }
           </button>

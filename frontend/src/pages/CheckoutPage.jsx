@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MapPin, Banknote, Info } from 'lucide-react'
+import { MapPin, Banknote, Info, Check, AlertTriangle, Phone } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
@@ -189,7 +189,7 @@ function PayBtn({ method, selected, onSelect }) {
               border:     `2px solid ${selected ? '#B8752A' : '#3D2000'}`,
               background: selected ? '#B8752A' : 'transparent',
             }}>
-            {selected && <span style={{ color: '#1A0A00', fontSize: '12px', fontWeight: 'bold' }}>✓</span>}
+            {selected && <Check size={12} strokeWidth={3} style={{ color: '#1A0A00' }} />}
           </div>
         </div>
         
@@ -205,8 +205,8 @@ function PayBtn({ method, selected, onSelect }) {
                 <p className="text-sm font-bold font-mono mt-1" style={{ color: '#B8752A' }}>{config.ussd}</p>
               </div>
             </div>
-            <p className="text-[10px] mt-3 px-3 py-2 rounded" style={{ background: 'rgba(184,117,42,0.1)', color: '#8C7355' }}>
-              📞 Dial <strong>{config.ussd}</strong> from your {config.label.split(' ')[0]} line to complete payment
+            <p className="text-[10px] mt-3 px-3 py-2 rounded flex items-center gap-1.5" style={{ background: 'rgba(184,117,42,0.1)', color: '#8C7355' }}>
+              <Phone size={12} className="flex-shrink-0" /> Dial <strong>{config.ussd}</strong> from your {config.label.split(' ')[0]} line to complete payment
             </p>
           </div>
         )}
@@ -673,13 +673,13 @@ export default function CheckoutPage() {
                         {!selectedZone && validationErrors.length > 0 && validationErrors.find(e => e.includes('delivery zone')) && (
                           <p
                             id={zoneErrorId}
-                            className="text-[10px] mt-3 px-3 py-2 rounded"
+                            className="text-[10px] mt-3 px-3 py-2 rounded flex items-center gap-1.5"
                             style={{
                               background: 'rgba(248, 113, 113, 0.15)',
                               border: '1px solid rgba(248, 113, 113, 0.3)',
                               color: '#f87171'
                             }}>
-                            ⚠️ {validationErrors.find(e => e.includes('delivery zone'))}
+                            <AlertTriangle size={12} className="flex-shrink-0" /> {validationErrors.find(e => e.includes('delivery zone'))}
                           </p>
                         )}
                       </>
@@ -718,8 +718,8 @@ export default function CheckoutPage() {
                 </div>
                 {validationErrors.length > 0 && (
                   <div className="mb-4 p-4 rounded" style={{ background: 'rgba(248,113,113,0.15)', border: '2px solid #f87171' }}>
-                    <p className="text-sm font-semibold mb-2" style={{ color: '#f87171' }}>
-                      ⚠️ Please complete the following:
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#f87171' }}>
+                      <AlertTriangle size={15} /> Please complete the following:
                     </p>
                     <ul className="space-y-1">
                       {validationErrors.map((error, i) => (

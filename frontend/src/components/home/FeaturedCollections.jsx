@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ArrowRight } from 'lucide-react'
 import ProductCard from '../product/ProductCard'
 import ProductCardSkeleton from '../product/ProductCardSkeleton'
 import { Link } from 'react-router-dom'
@@ -34,7 +35,7 @@ export default function FeaturedCollections() {
             className="hidden md:inline-flex items-center gap-2 text-dark font-medium text-sm hover:text-primary transition group"
           >
             View all
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
+            <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -52,7 +53,7 @@ export default function FeaturedCollections() {
             to="/shop"
             className="inline-flex items-center gap-2 border border-dark text-dark px-6 py-3 rounded-full font-medium hover:bg-dark hover:text-light transition"
           >
-            View all products →
+            View all products <ArrowRight size={15} />
           </Link>
         </div>
       </div>

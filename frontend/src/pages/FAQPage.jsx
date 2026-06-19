@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import Crown from '../components/shared/Crown'
 import { FAQSeo } from '../components/shared/SEO'
 
@@ -189,7 +190,7 @@ export default function FAQPage() {
             className="inline-flex items-center gap-2 font-bold text-[11px] tracking-[0.25em] uppercase transition-opacity hover:opacity-70"
             style={{ color: '#B8752A' }}
           >
-            Contact Us →
+            Contact Us <ArrowRight size={14} />
           </a>
         </div>
       </div>

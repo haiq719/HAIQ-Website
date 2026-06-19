@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import ProductCard from '../product/ProductCard'
 import ProductCardSkeleton from '../product/ProductCardSkeleton'
 import api from '../../services/api'
@@ -77,7 +78,7 @@ export default function CoreCollectionCarousel() {
               aria-label="Scroll left"
               className="w-11 h-11 rounded-full border border-dark/20 flex items-center justify-center hover:bg-dark hover:text-light hover:border-dark transition-all disabled:opacity-20 disabled:cursor-not-allowed"
             >
-              ←
+              <ChevronLeft size={18} />
             </button>
             <button
               onClick={() => scroll('right')}
@@ -85,7 +86,7 @@ export default function CoreCollectionCarousel() {
               aria-label="Scroll right"
               className="w-11 h-11 rounded-full border border-dark/20 flex items-center justify-center hover:bg-dark hover:text-light hover:border-dark transition-all disabled:opacity-20 disabled:cursor-not-allowed"
             >
-              →
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>

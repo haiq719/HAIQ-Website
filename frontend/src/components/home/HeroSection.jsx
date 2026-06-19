@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import Crown from '../shared/Crown'
 
 const SPECS = [
@@ -142,7 +143,7 @@ export default function HeroSection() {
                 onMouseLeave={e => e.currentTarget.style.color = 'rgba(242,234,216,0.5)'}
               >
                 Build Your Box
-                <span style={{ color: '#B8752A', fontSize: '16px' }}>→</span>
+                <ArrowRight size={15} style={{ color: '#B8752A' }} />
               </Link>
             </div>
           </div>

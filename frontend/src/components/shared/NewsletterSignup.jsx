@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckCircle2 } from 'lucide-react'
 import api from '../../services/api'
 
 export default function NewsletterSignup() {
@@ -37,7 +38,7 @@ export default function NewsletterSignup() {
         {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
       </button>
       {status === 'success' && (
-        <p className="text-green-400 text-sm">You're in the inner circle. 🍞</p>
+        <p className="text-green-400 text-sm flex items-center gap-1.5"><CheckCircle2 size={14} /> You're in the inner circle.</p>
       )}
       {status === 'error' && (
         <p className="text-red-400 text-sm">Something went wrong. Try again.</p>

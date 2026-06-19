@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import Crown from '../components/shared/Crown'
@@ -140,7 +141,7 @@ function OrderDetail({ order, onBack, onCancelled }) {
     <div>
       <button onClick={onBack} className="flex items-center gap-2 mb-6 text-sm hover:opacity-70 transition"
         style={{ color: '#8C7355' }}>
-        ← All Orders
+        <ArrowLeft size={15} /> All Orders
       </button>
 
       {/* Order header */}
