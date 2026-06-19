@@ -17,8 +17,16 @@ const generalLimiter = createLimiter(
   'Rate limit exceeded. Please slow down.'
 );
 
-// Auth endpoints (stricter)
-const authLimiter = createLimiter(15 * 60 * 1000, 10, 'Too many auth attempts. Try again in 15 minutes.');
+// Auth endpoints (stricter) — keyed by email body field so shared office IPs don't block each other
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => (req.body?.email || req.ip || 'unknown').toLowerCase(),
+  message: { success: false, error: 'Too many auth attempts. Try again in 15 minutes.' },
+  skip: (req) => process.env.NODE_ENV === 'test',
+});
 
 // Order creation
 const orderLimiter = createLimiter(10 * 60 * 1000, 5, 'Too many orders submitted. Wait 10 minutes.');

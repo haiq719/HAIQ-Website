@@ -13,33 +13,36 @@ import {
   Mail,
   CalendarHeart,
   MapPin,
+  Users,
   LogOut,
   X,
   Menu
 } from 'lucide-react'
 
 const NAV = [
-  { to: '/dashboard',    label: 'Dashboard',    Icon: LayoutDashboard },
-  { to: '/analytics',    label: 'Analytics',    Icon: BarChart3 },
-  { to: '/orders',       label: 'Orders',       Icon: ShoppingBag },
-  { to: '/products',     label: 'Products',     Icon: Package },
-  { to: '/messages',     label: 'Messages',     Icon: MessageSquare },
-  { to: '/loyalty',      label: 'Loyalty Cards', Icon: CreditCard },
-  { to: '/newsletter',   label: 'Newsletter',   Icon: Mail },
-  { to: '/special-days', label: 'Special Days', Icon: CalendarHeart },
+  { to: '/dashboard',      label: 'Dashboard',      Icon: LayoutDashboard },
+  { to: '/analytics',      label: 'Analytics',      Icon: BarChart3 },
+  { to: '/orders',         label: 'Orders',         Icon: ShoppingBag },
+  { to: '/products',       label: 'Products',       Icon: Package },
+  { to: '/messages',       label: 'Messages',       Icon: MessageSquare },
+  { to: '/loyalty',        label: 'Loyalty Cards',  Icon: CreditCard },
+  { to: '/newsletter',     label: 'Newsletter',     Icon: Mail },
+  { to: '/special-days',   label: 'Special Days',   Icon: CalendarHeart },
   { to: '/delivery-zones', label: 'Delivery Zones', Icon: MapPin },
+  { to: '/staff',          label: 'Staff',          Icon: Users, superadminOnly: true },
 ]
 
 const PAGE_TITLES = {
-  '/dashboard':    'Dashboard',
-  '/analytics':    'Analytics Dashboard',
-  '/orders':       'Orders',
-  '/products':     'Products',
-  '/messages':     'Messages',
-  '/loyalty':      'Loyalty Cards',
-  '/newsletter':   'Newsletter',
-  '/special-days': 'Special Days',
+  '/dashboard':      'Dashboard',
+  '/analytics':      'Analytics Dashboard',
+  '/orders':         'Orders',
+  '/products':       'Products',
+  '/messages':       'Messages',
+  '/loyalty':        'Loyalty Cards',
+  '/newsletter':     'Newsletter',
+  '/special-days':   'Special Days',
   '/delivery-zones': 'Delivery Zones',
+  '/staff':          'Staff',
 }
 
 export default function AdminLayout({ children }) {
@@ -88,7 +91,7 @@ export default function AdminLayout({ children }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-          {NAV.map(item => (
+          {NAV.filter(item => !item.superadminOnly || admin?.role === 'superadmin').map(item => (
             <NavLink key={item.to} to={item.to}
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all"
               style={({ isActive }) => ({
@@ -181,7 +184,7 @@ export default function AdminLayout({ children }) {
               </button>
             </div>
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-              {NAV.map(item => (
+              {NAV.filter(item => !item.superadminOnly || admin?.role === 'superadmin').map(item => (
                 <NavLink key={item.to} to={item.to} onClick={() => setSidebarOpen(false)}
                   className="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg"
                   style={({ isActive }) => ({
