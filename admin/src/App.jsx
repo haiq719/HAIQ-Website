@@ -14,18 +14,27 @@ import DeliveryZonesPage from './pages/DeliveryZonesPage'
 import AnalyticsPage   from './pages/AnalyticsPage'
 import StaffPage        from './pages/StaffPage'
 
+const Spinner = () => (
+  <div className="min-h-screen flex items-center justify-center" style={{ background: '#0E0600' }}>
+    <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin"
+      style={{ borderColor: '#B8752A', borderTopColor: 'transparent' }} />
+  </div>
+)
+
+// Blocks unauthenticated users — redirects to /login
 function RequireAuth({ children }) {
-  // AdminAuthContext exposes 'admin' (not 'token') — check admin object
   const { admin, loading } = useAdminAuth()
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0E0600' }}>
-      <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin"
-        style={{ borderColor: '#B8752A', borderTopColor: 'transparent' }} />
-    </div>
-  )
-
+  if (loading) return <Spinner />
   return admin ? children : <Navigate to="/login" replace />
+}
+
+// Blocks non-superadmin users — redirects to /dashboard
+function RequireSuperAdmin({ children }) {
+  const { admin, loading } = useAdminAuth()
+  if (loading) return <Spinner />
+  if (!admin) return <Navigate to="/login" replace />
+  if (admin.role !== 'superadmin') return <Navigate to="/dashboard" replace />
+  return children
 }
 
 function ProtectedLayout({ children }) {
@@ -33,6 +42,14 @@ function ProtectedLayout({ children }) {
     <RequireAuth>
       <AdminLayout>{children}</AdminLayout>
     </RequireAuth>
+  )
+}
+
+function SuperAdminLayout({ children }) {
+  return (
+    <RequireSuperAdmin>
+      <AdminLayout>{children}</AdminLayout>
+    </RequireSuperAdmin>
   )
 }
 
@@ -53,7 +70,7 @@ export default function App() {
           <Route path="/newsletter"   element={<ProtectedLayout><NewsletterPage /></ProtectedLayout>} />
           <Route path="/special-days" element={<ProtectedLayout><SpecialDaysPage /></ProtectedLayout>} />
           <Route path="/delivery-zones" element={<ProtectedLayout><DeliveryZonesPage /></ProtectedLayout>} />
-          <Route path="/staff"         element={<ProtectedLayout><StaffPage /></ProtectedLayout>} />
+          <Route path="/staff"         element={<SuperAdminLayout><StaffPage /></SuperAdminLayout>} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
