@@ -77,7 +77,7 @@ router.patch('/:id', requireStaff, async (req, res, next) => {
     const setNow = Object.entries(updates)
       .filter(([, v]) => v === 'NOW()')
       .map(([k]) => `${k} = NOW()`)
-    const allSet = [...setClauses, ...setNow, 'updated_at = NOW()'].join(', ')
+    const allSet = [...setClauses, ...setNow].join(', ')
     const values = [req.params.id, ...Object.entries(updates).filter(([, v]) => v !== 'NOW()').map(([, v]) => v)]
 
     await query(`UPDATE loyalty_cards SET ${allSet} WHERE id = $1`, values);
